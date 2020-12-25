@@ -125,6 +125,11 @@ func join_game(ip, nickname):
 	# waiting_for_players signal
 
 sync func start_game():
+
+	
+	if game_started: 
+		return; #FIXME: This should never happen
+
 	#Load the main game scene
 	var arena = load("res://scenes/stage.tscn").instance();
 	get_tree().get_root().add_child(arena);
@@ -144,6 +149,10 @@ sync func start_game():
 	
 	game_started = true;
 	emit_signal("game_started");
+
+func clear_arena():
+	if game_started:
+		get_node("/root/stage").queue_free();
 
 func _stop_game(msg):
 	# Destroy networking system

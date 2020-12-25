@@ -49,6 +49,7 @@ func _on_player_score():
 sync func update_score(new_score):
 	score = new_score;
 	Game.score = new_score;
+	print(score);
 	get_node("ui/score").text = "Score: " + str(score);
 
 func log_2(val: float) -> float:

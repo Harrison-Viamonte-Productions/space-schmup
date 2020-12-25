@@ -18,6 +18,7 @@ animations = [ {
 [node name="player" type="KinematicBody2D" groups=[
 "player",
 ]]
+collision_mask = 0
 script = ExtResource( 3 )
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]

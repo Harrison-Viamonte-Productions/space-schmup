@@ -18,10 +18,14 @@ radius = 6.0
 [node name="asteroid" type="Area2D" groups=[
 "asteroid",
 ]]
+gravity = 0.0
+priority = 1.0
+monitorable = false
 script = ExtResource( 3 )
 
 [node name="sprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 1 )
+frame = 1
 playing = true
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]

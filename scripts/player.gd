@@ -45,7 +45,6 @@ func _on_snapshot():
 	rpc_unreliable("receive_snapshot", sendData);
 
 func cs_think(delta):
-	#move_and_slide(MOVE_SPEED*input_dir);
 	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED)
 
 func think(delta):
@@ -79,8 +78,7 @@ func move(delta):
 		input_dir.x -= 1.0;
 	if Input.is_key_pressed(KEY_RIGHT):
 		input_dir.x += 1.0;
-	
-	#position += (delta*MOVE_SPEED)*input_dir;
+
 	move_and_slide(MOVE_SPEED*input_dir);
 
 	if position.x < (SPACE_SIZE/2.0):
@@ -108,9 +106,3 @@ sync func _on_destroyed():
 func hit_by_asteroid():
 	if is_network_master() && is_alive:
 		rpc("_on_destroyed");
-
-#func _on_player_area_entered(area):
-#	if area.is_in_group("asteroid") && is_alive && is_network_master():
-#		rpc("_on_destroyed");
-#		print("Asteroid entered area....");
-

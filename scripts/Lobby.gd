@@ -15,6 +15,9 @@ func _ready():
 func host_server():
 	Game.host_game("Player");
 	$HostServer.disabled = true;
+	var max_players: int = int($MaxClients.text);
+	if max_players == 1:
+		Game.rpc("start_game");
 
 func _update_player_list(players):
 	var max_players: int = int($MaxClients.text);

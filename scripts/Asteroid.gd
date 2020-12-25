@@ -24,14 +24,17 @@ func destroy():
 	stage_node.add_child(explosion_instance);
 
 func _on_asteroid_area_entered(area):
-	if (area.is_in_group("shot") || area.is_in_group("player")):
-		if area.is_in_group("shot"): 
-			health-=1;
-		if !score_emitted && health <= 0:
-			destroy();
+	if area.is_in_group("shot"):
+		health-=1;
 
+	if !score_emitted && health <= 0:
+		destroy();
 
 func _on_asteroid_body_entered(body):
+	# Fix me: This is ductape second check because godot area2d collision with movement (asteroid) is broken
+	var dist_bodies: Vector2 = body.global_position - self.global_position;
+	if dist_bodies.length() > 30.0:
+		return; #Fake collision for sure
 	health = 0;
 	body.hit_by_asteroid();
 	if !score_emitted && health <= 0:

@@ -80,7 +80,8 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			scale = rng.randf_range(1.0, scaleMax),
 			pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
 			speed = rng.randf_range(50.0, 50.0+30.0*difficulty),
-			health = 0
+			health = 0,
+			rotation = rng.randi_range(-25, 25)
 		};
 		enemy_spawnargs.health = round((enemy_spawnargs.scale-1.0)*6.0+2.0);
 		enemies.append(enemy_spawnargs);
@@ -102,6 +103,7 @@ func spawn_enemies(to_spawn: Array):
 		asteroid_instance.health = enemy.health;
 		asteroid_instance.scale = Vector2(enemy.scale, enemy.scale);
 		asteroid_instance.connect("destroyed", self, "_on_player_score");
+		asteroid_instance.spawn_rotation = enemy.rotation;
 		get_node("Enemies").add_child(asteroid_instance);
 
 func _on_player_score():

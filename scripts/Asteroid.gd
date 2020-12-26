@@ -6,9 +6,11 @@ export var move_speed: float = 100.0;
 export var health: int = 1;
 var is_destroyed = false;
 signal destroyed;
+var spawn_rotation: float = 0;
 
 func _ready():
 	add_to_group("enemies");
+	$sprite.rotation_degrees = spawn_rotation;
 
 func _process(delta):
 	position-=Vector2(move_speed*delta, 0.0);
@@ -32,7 +34,8 @@ func destroy():
 func _on_asteroid_area_entered(area):
 	if area.is_in_group("shot"):
 		health-=1;
-
+		$AnimationPlayer.play("hit");
+		area.destroy();
 	if !is_destroyed && health <= 0:
 		destroy();
 

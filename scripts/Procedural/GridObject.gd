@@ -131,7 +131,6 @@ func get_random_cell(force_seed: int = -1) -> Vector2:
 		rng.set_seed(force_seed);
 	return Vector2(rng.randi_range(0, dim.x-1), rng.randi_range(0, dim.y-1));
 
-# DEBUG ONLY
 ######################
 # To draw the grid, in a _draw method use for each line in lines, being lines what get_lines return
 #	draw_line(line[0], line[1], Color(0, 0, 255), 1);

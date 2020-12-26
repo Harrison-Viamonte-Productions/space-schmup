@@ -1,10 +1,11 @@
+class_name Player
 extends KinematicBody2D
 
 const SCREEN_WIDTH = 320;
 const SCREEN_HEIGHT = 180;
 const SPACE_SIZE = 20.0;
 const MOVE_SPEED = 100.0;
-const CLIENT_FOLLOW_SPEED = 6.0;
+const CLIENT_FOLLOW_SPEED = 8.0;
 
 signal destroyed;
 
@@ -15,7 +16,7 @@ var double_shoot = false;
 var explosion_scene = preload("res://scenes/explosion.tscn");
 var shot_scene = preload("res://scenes/shot.tscn");
 var snapshotData: Dictionary = {pos = Vector2()};
-var spawn_protection_time: float = 5.0;
+var spawn_protection_time: float = 3.0;
 
 func _ready():
 	var timer: Timer = Timer.new();
@@ -44,6 +45,7 @@ func _on_snapshot():
 	sendData.pos = global_position;
 	rpc_unreliable("receive_snapshot", sendData);
 
+# Clientside think
 func cs_think(delta):
 	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED)
 
@@ -80,7 +82,9 @@ func move(delta):
 		input_dir.x += 1.0;
 
 	move_and_slide(MOVE_SPEED*input_dir);
+	adjust_position_to_bounds();
 
+func adjust_position_to_bounds():
 	if position.x < (SPACE_SIZE/2.0):
 		position.x = (SPACE_SIZE/2.0);
 	elif position.x > (SCREEN_WIDTH-SPACE_SIZE/2.0):
@@ -96,7 +100,6 @@ func _on_reload_timer_timeout():
 sync func _on_destroyed():
 	if is_alive && spawn_protection_time <= 0.0:
 		call_deferred("queue_free");
-		emit_signal("destroyed");
 		var stage_node = get_parent();
 		var explosion_instance = explosion_scene.instance();
 		explosion_instance.position = position;
@@ -106,3 +109,6 @@ sync func _on_destroyed():
 func hit_by_asteroid():
 	if is_network_master() && is_alive:
 		rpc("_on_destroyed");
+
+func _exit_tree():
+	emit_signal("destroyed");

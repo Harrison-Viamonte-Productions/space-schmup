@@ -8,9 +8,20 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Object",
+"class": "LatencyCounter",
+"language": "GDScript",
+"path": "res://scripts/Netcode/LatencyCounter.gd"
+}, {
+"base": "KinematicBody2D",
+"class": "Player",
+"language": "GDScript",
+"path": "res://scripts/player.gd"
+} ]
 _global_script_class_icons={
-
+"LatencyCounter": "",
+"Player": ""
 }
 
 [application]

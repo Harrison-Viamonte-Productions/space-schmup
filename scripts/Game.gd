@@ -5,6 +5,8 @@ const MAX_PLAYERS: int = 4;
 const SERVER_NETID: int = 1;
 const SNAPSHOT_DELAY = 1.0/30.0; #Msec to Sec
 const LevelScene: String = "/root/stage";
+const SCREEN_WIDTH = 320;
+const SCREEN_HEIGHT = 180;
 
 enum TOOLS{
 	PING_UTIL,

@@ -69,4 +69,6 @@ __meta__ = {
 }
 
 [node name="Players" type="Node2D" parent="."]
+
+[node name="Enemies" type="Node2D" parent="."]
 [connection signal="timeout" from="spawn_timer" to="." method="_on_spawn_timer_timeout"]

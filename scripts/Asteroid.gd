@@ -15,6 +15,9 @@ func _process(delta):
 	if position.x <= -100:
 		call_deferred("queue_free");
 
+func _draw():
+	pass;
+
 func destroy():
 	if is_destroyed:
 		return;

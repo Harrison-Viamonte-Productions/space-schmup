@@ -1,8 +1,6 @@
 class_name Player
 extends KinematicBody2D
 
-const SCREEN_WIDTH = 320;
-const SCREEN_HEIGHT = 180;
 const SPACE_SIZE = 20.0;
 const MOVE_SPEED = 100.0;
 const CLIENT_FOLLOW_SPEED = 8.0;
@@ -85,8 +83,8 @@ func move(delta):
 	move_and_slide(MOVE_SPEED*direction);
 
 func adjust_position_to_bounds():
-	position.x = clamp(position.x, SPACE_SIZE/2.0, SCREEN_WIDTH-SPACE_SIZE/2.0);
-	position.y = clamp(position.y, SPACE_SIZE/2.0, SCREEN_HEIGHT-SPACE_SIZE/2.0);
+	position.x = clamp(position.x, SPACE_SIZE/2.0, Game.SCREEN_WIDTH-SPACE_SIZE/2.0);
+	position.y = clamp(position.y, SPACE_SIZE/2.0, Game.SCREEN_HEIGHT-SPACE_SIZE/2.0);
 
 func _on_reload_timer_timeout():
 	can_shoot = true;

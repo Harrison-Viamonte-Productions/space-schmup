@@ -17,6 +17,7 @@ var explosion_scene = preload("res://scenes/explosion.tscn");
 var shot_scene = preload("res://scenes/shot.tscn");
 var snapshotData: Dictionary = {pos = Vector2()};
 var spawn_protection_time: float = 3.0;
+var direction: Vector2 = Vector2.ZERO;
 
 func _ready():
 	var timer: Timer = Timer.new();
@@ -27,6 +28,7 @@ func _ready():
 	timer.start();
 	snapshotData.pos = self.global_position;
 
+# Main player frame
 func _physics_process(delta):
 	if spawn_protection_time > 0.0:
 		spawn_protection_time-=delta;
@@ -50,11 +52,24 @@ func cs_think(delta):
 	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED)
 
 func think(delta):
+	handle_input();
 	move(delta);
+	adjust_position_to_bounds();
+
+func handle_input():
 	if Input.is_key_pressed(KEY_SPACE) && can_shoot:
 		rpc_unreliable("shoot_missile", (Game.score >= 50));
 		can_shoot = false;
 		get_node("reload_timer").start();
+	direction = Vector2.ZERO;
+	if Input.is_key_pressed(KEY_UP):
+		direction.y -= 1.0;
+	if Input.is_key_pressed(KEY_DOWN):
+		direction.y += 1.0;
+	if Input.is_key_pressed(KEY_LEFT):
+		direction.x -= 1.0;
+	if Input.is_key_pressed(KEY_RIGHT):
+		direction.x += 1.0;
 
 sync func shoot_missile(is_double_shoot: bool):
 	var stage_node = get_parent();
@@ -71,18 +86,7 @@ sync func shoot_missile(is_double_shoot: bool):
 	stage_node.add_child(shot_instanceA);
 
 func move(delta):
-	var input_dir: Vector2 = Vector2.ZERO;
-	if Input.is_key_pressed(KEY_UP):
-		input_dir.y -= 1.0;
-	if Input.is_key_pressed(KEY_DOWN):
-		input_dir.y += 1.0;
-	if Input.is_key_pressed(KEY_LEFT):
-		input_dir.x -= 1.0;
-	if Input.is_key_pressed(KEY_RIGHT):
-		input_dir.x += 1.0;
-
-	move_and_slide(MOVE_SPEED*input_dir);
-	adjust_position_to_bounds();
+	move_and_slide(MOVE_SPEED*direction);
 
 func adjust_position_to_bounds():
 	if position.x < (SPACE_SIZE/2.0):

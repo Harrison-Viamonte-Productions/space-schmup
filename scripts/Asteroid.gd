@@ -4,8 +4,11 @@ var explosion_scene = preload("res://scenes/explosion.tscn");
 
 export var move_speed: float = 100.0;
 export var health: int = 1;
-var score_emitted = false;
-signal score;
+var is_destroyed = false;
+signal destroyed;
+
+func _ready():
+	add_to_group("enemies");
 
 func _process(delta):
 	position-=Vector2(move_speed*delta, 0.0);
@@ -13,10 +16,10 @@ func _process(delta):
 		call_deferred("queue_free");
 
 func destroy():
-	if score_emitted:
+	if is_destroyed:
 		return;
-	score_emitted = true;
-	emit_signal("score");
+	is_destroyed = true;
+	emit_signal("destroyed"); # Call it here and not in exit_tree...
 	call_deferred("queue_free");
 	var stage_node = get_parent();
 	var explosion_instance = explosion_scene.instance();
@@ -27,11 +30,11 @@ func _on_asteroid_area_entered(area):
 	if area.is_in_group("shot"):
 		health-=1;
 
-	if !score_emitted && health <= 0:
+	if !is_destroyed && health <= 0:
 		destroy();
 
 func _on_asteroid_body_entered(body):
 	health = 0;
 	body.hit_by_asteroid();
-	if !score_emitted && health <= 0:
+	if !is_destroyed && health <= 0:
 		destroy();

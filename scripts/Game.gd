@@ -21,6 +21,7 @@ signal player_killed(killed_id);
 signal update_latency(new_latency);
 
 var game_started: bool = false;
+var restarting: bool = false;
 var player_nickname: String = "Player";
 var players = {};
 var score: int = 0;
@@ -75,7 +76,6 @@ slave func _kicked_by_server(reason):
 	_stop_game(reason);
 
 master func register_player_to_server(id, name):
-	# As server, we notify here if the new client is allowed to join the game.
 	if game_started:
 		rpc_id(id, "_kicked_by_server", "Game already started");
 	elif len(players) >= MAX_PLAYERS:
@@ -100,66 +100,50 @@ puppet func register_player(id, name):
 	emit_signal("player_list_updated", players);
 
 func host_game(name):
-	# We are the server
 	var host: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new();
 	host.create_server(PORT);
 	get_tree().set_network_peer(host);
 	player_nickname = name;
-	
-	# First player is ourself
-	# Note we don't call register_player as rpc given no client
-	# are connected for the moment
-	
 	register_player(SERVER_NETID, name);
 	emit_signal("waiting_for_players");
 
 func join_game(ip, nickname):
-	# We are a client, thus we should wait for connection with the
-	# server before starting new game
 	player_nickname = nickname;
 	var host: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new();
 	host.create_client(ip, PORT);
 	get_tree().set_network_peer(host);
-	#Note we wait for server to respond before sending
-	# waiting_for_players signal
 
-sync func start_game():
-
-	if game_started: 
-		return; #FIXME: This should never happen
-
-	#Load the main game scene
-	var arena: Node = load("res://scenes/stage.tscn").instance();
-	connect("update_latency", arena, "update_latency");
-	get_tree().get_root().add_child(arena);
+func spawn_players(level: Node):
 	#Populate each player
 	var i = 0;
 	for p_id in players:
 		var player_node: Player = player_scene.instance();
-		#player_node.id = p_id;
-		#player_node.nickname = players[p_id];
-		#Configure player color and initial position according to it
-		#order in the list
+		player_node.set_name(str(p_id));
 		player_node.position = Vector2(50.0, 50.0+25.0*i);
 		player_node.modulate = colors_to_pick[i];
 		player_node.set_network_master(p_id);
-		arena.get_node("Players").add_child(player_node);
-		player_node.connect("destroyed", arena, "_on_player_destroyed");
+		level.get_node("Players").add_child(player_node);
+		player_node.connect("destroyed", level, "_on_player_destroyed");
 		i+=1;
-	
-	arena.players_alive = i;
+	level.players_alive = i;
+
+sync func start_game():
+	if game_started: 
+		return; #FIXME: This should never happen
+
+	restarting = false;
+	#Load the main game scene
+	var arena: Node = load("res://scenes/stage.tscn").instance();
+	#arena.connect("tree_exited", self, "stage_removed");
+	connect("update_latency", arena, "update_latency");
+	get_tree().get_root().add_child(arena);
+	spawn_players(arena);
 	game_started = true;
 	emit_signal("game_started");
 
-
 func clear_arena():
-	if game_started:
+	if game_started && get_node_or_null(LevelScene):
 		get_node(LevelScene).queue_free();
-
-sync func restart_game():
-	clear_arena();
-	game_started = false;
-	start_game();
 
 func _stop_game(msg):
 	# Destroy networking system

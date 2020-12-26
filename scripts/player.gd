@@ -20,12 +20,7 @@ var spawn_protection_time: float = 3.0;
 var direction: Vector2 = Vector2.ZERO;
 
 func _ready():
-	var timer: Timer = Timer.new();
-	timer.set_wait_time(Game.SNAPSHOT_DELAY);
-	timer.set_one_shot(false);
-	timer.connect("timeout", self, "_on_snapshot");
-	self.add_child(timer);
-	timer.start();
+	add_to_group("network_nodes");
 	snapshotData.pos = self.global_position;
 
 # Main player frame
@@ -49,7 +44,8 @@ func _on_snapshot():
 
 # Clientside think
 func cs_think(delta):
-	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED)
+	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED);
+	adjust_position_to_bounds();
 
 func think(delta):
 	handle_input();
@@ -89,14 +85,8 @@ func move(delta):
 	move_and_slide(MOVE_SPEED*direction);
 
 func adjust_position_to_bounds():
-	if position.x < (SPACE_SIZE/2.0):
-		position.x = (SPACE_SIZE/2.0);
-	elif position.x > (SCREEN_WIDTH-SPACE_SIZE/2.0):
-		position.x = SCREEN_WIDTH-SPACE_SIZE/2.0;
-	if position.y < (SPACE_SIZE/2.0):
-		position.y = (SPACE_SIZE/2.0);
-	elif position.y > (SCREEN_HEIGHT-SPACE_SIZE/2.0):
-		position.y = SCREEN_HEIGHT-SPACE_SIZE/2.0;
+	position.x = clamp(position.x, SPACE_SIZE/2.0, SCREEN_WIDTH-SPACE_SIZE/2.0);
+	position.y = clamp(position.y, SPACE_SIZE/2.0, SCREEN_HEIGHT-SPACE_SIZE/2.0);
 
 func _on_reload_timer_timeout():
 	can_shoot = true;
@@ -115,4 +105,5 @@ func hit_by_asteroid():
 		rpc("_on_destroyed");
 
 func _exit_tree():
+	remove_from_group("network_nodes");
 	emit_signal("destroyed");

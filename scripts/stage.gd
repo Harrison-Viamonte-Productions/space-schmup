@@ -140,7 +140,7 @@ func _on_player_destroyed():
 	players_alive-=1;
 	if players_alive <= 0:
 		if is_network_master(): #Let the server handle this to avoid desync player lives between clients
-			update_lives(lives-1);
+			rpc("update_lives", lives-1);
 
 
 ##################

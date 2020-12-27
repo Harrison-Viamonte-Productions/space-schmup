@@ -62,6 +62,8 @@ func _on_player_destroyed():
 	players_alive-=1;
 	if players_alive <= 0:
 		is_game_over = true;
+		if !is_network_master():
+			$ui/retry.text = "Waiting for server to restart...";
 		$ui/retry.show();
 
 func _on_spawn_timer_timeout():
@@ -79,7 +81,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 		var enemy_spawnargs: Dictionary = {
 			scale = rng.randf_range(1.0, scaleMax),
 			pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
-			speed = rng.randf_range(50.0, 50.0+30.0*difficulty),
+			speed = Vector2(rng.randf_range(50.0, 50.0+30.0*difficulty), rng.randi_range(-15.0, 15.0)),
 			health = 0,
 			rotation = rng.randi_range(-25, 25)
 		};
@@ -98,7 +100,7 @@ func spawn_enemies(to_spawn: Array):
 		if is_network_master():
 			asteroid_instance.position = enemy.pos;
 		else:
-			asteroid_instance.position = enemy.pos - Vector2(enemy.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY), 0.0); 
+			asteroid_instance.position = enemy.pos - enemy.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
 		asteroid_instance.move_speed = enemy.speed;
 		asteroid_instance.health = enemy.health;
 		asteroid_instance.scale = Vector2(enemy.scale, enemy.scale);

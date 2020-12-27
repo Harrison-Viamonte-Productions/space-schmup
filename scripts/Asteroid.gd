@@ -2,7 +2,7 @@ extends Area2D
 
 var explosion_scene = preload("res://scenes/explosion.tscn");
 
-export var move_speed: float = 100.0;
+export var move_speed: Vector2 = Vector2(100.0, 0.0);
 export var health: int = 1;
 var is_destroyed = false;
 signal destroyed;
@@ -13,7 +13,7 @@ func _ready():
 	$sprite.rotation_degrees = spawn_rotation;
 
 func _process(delta):
-	position-=Vector2(move_speed*delta, 0.0);
+	position-=delta*move_speed;
 	if position.x <= -100:
 		call_deferred("queue_free");
 

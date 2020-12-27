@@ -9,11 +9,14 @@ extends Node2D
 # So, therefore, Clockout's way of doing netcode it's better for big projects.
 # ############################
 
+const POINT_PER_LIFE = 100;
+
 var is_game_over = false;
 var asteroid = preload("res://scenes/Asteroid.tscn");
 var enemies_count: int = 0; #Important for netcode
 var score: int = 0;
 var players_alive: int = 0;
+var lives = 3;
 
 #Procedural generation stuff
 var map_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
@@ -32,10 +35,14 @@ func _ready():
 	SnapshotTimer.start();
 	
 	$ui/retry.hide();
+	update_lives()
 
 func clear_stage():
 	enemies_count = 0;
 	rng.randomize();
+
+func update_lives():
+	$ui/lives.text = "Lives: " + str(lives)
 
 func _on_snapshot():
 	get_tree().call_group("network_nodes","_on_snapshot");
@@ -64,11 +71,14 @@ func _on_player_revived():
 func _on_player_destroyed():
 	players_alive-=1;
 	if players_alive <= 0:
-		Game.clear_players(self);
-		is_game_over = true;
-		if !is_network_master():
-			$ui/retry.text = "Waiting for server to restart...";
-		$ui/retry.show();
+		lives-=1
+		update_lives()
+		if lives <= 0:
+			Game.clear_players(self);
+			is_game_over = true;
+			if !is_network_master():
+				$ui/retry.text = "Waiting for server to restart...";
+			$ui/retry.show();
 
 func _on_spawn_timer_timeout():
 	if !is_network_master():
@@ -114,6 +124,9 @@ func spawn_enemies(to_spawn: Array):
 
 func _on_player_score():
 	score += 1;
+	if score % POINT_PER_LIFE == 0:
+		lives+=1
+		update_lives()
 	if is_network_master():
 		rpc("update_score", score);
 

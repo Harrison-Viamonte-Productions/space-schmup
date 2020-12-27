@@ -29,6 +29,12 @@ func _ready():
 func _physics_process(delta):
 	if spawn_protection_time > 0.0:
 		spawn_protection_time-=delta;
+		if $sprite.modulate.a == 1:
+			$sprite.modulate.a = 0.5
+		else:
+			$sprite.modulate.a = 1
+	else:
+		$sprite.modulate.a = 1
 	if not is_alive:
 		respawn_time-=delta;
 		$respawn_timer.text = str(int(respawn_time));

@@ -10,13 +10,14 @@ extends Node2D
 # ############################
 
 const POINT_PER_LIFE = 100;
+const START_LIVES = 3;
 
 var is_game_over = false;
 var asteroid = preload("res://scenes/Asteroid.tscn");
 var enemies_count: int = 0; #Important for netcode
 var score: int = 0;
 var players_alive: int = 0;
-var lives = 3;
+var lives = START_LIVES;
 
 #Procedural generation stuff
 var map_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
@@ -35,14 +36,21 @@ func _ready():
 	SnapshotTimer.start();
 	
 	$ui/retry.hide();
-	update_lives()
+	update_lives(START_LIVES);
 
 func clear_stage():
 	enemies_count = 0;
 	rng.randomize();
 
-func update_lives():
+sync func update_lives(new_lives: int):
+	lives = new_lives;
 	$ui/lives.text = "Lives: " + str(lives)
+	if lives <= 0:
+		Game.clear_players(self);
+		is_game_over = true;
+		if !is_network_master():
+			$ui/retry.text = "Waiting for server to restart...";
+		$ui/retry.show();
 
 func _on_snapshot():
 	get_tree().call_group("network_nodes","_on_snapshot");
@@ -64,21 +72,7 @@ sync func restart_map():
 	$ui/retry.hide();
 	update_score(0);
 	clear_stage();
-
-func _on_player_revived():
-	players_alive+=1;
-
-func _on_player_destroyed():
-	players_alive-=1;
-	if players_alive <= 0:
-		lives-=1
-		update_lives()
-		if lives <= 0:
-			Game.clear_players(self);
-			is_game_over = true;
-			if !is_network_master():
-				$ui/retry.text = "Waiting for server to restart...";
-			$ui/retry.show();
+	update_lives(START_LIVES);
 
 func _on_spawn_timer_timeout():
 	if !is_network_master():
@@ -122,24 +116,51 @@ func spawn_enemies(to_spawn: Array):
 		asteroid_instance.spawn_rotation = enemy.rotation;
 		get_node("Enemies").add_child(asteroid_instance);
 
-func _on_player_score():
-	score += 1;
-	if score % POINT_PER_LIFE == 0:
-		lives+=1
-		update_lives()
-	if is_network_master():
-		rpc("update_score", score);
-
 sync func update_score(new_score):
 	score = new_score;
 	Game.score = new_score;
 	get_node("ui/score").text = "Score: " + str(score);
 
+	if score % POINT_PER_LIFE == 0:
+		update_lives(lives+1)
+
+#####################
+# Signal's events
+######################
+
+func _on_player_score():
+	score += 1;
+	if is_network_master():
+		rpc("update_score", score);
+
+func _on_player_revived():
+	players_alive+=1;
+
+func _on_player_destroyed():
+	players_alive-=1;
+	if players_alive <= 0:
+		if is_network_master(): #Let the server handle this to avoid desync player lives between clients
+			update_lives(lives-1);
+
+
+##################
+# UI'specific
+####################
+
+func muted():
+	$ui/MuteIcon.show();
+
+func unmuted():
+	$ui/MuteIcon.hide();
+
+func update_latency(new_latency: float):
+	$ui/Log.text = str(round(new_latency*1000.0)) + "ms";
+
+###############
+# MISC & Util
+###############
 func log_2(val: float) -> float:
 	return log(val)/log(2.0);
 
 func log_4(val: float) -> float:
 	return log(val)/log(4.0);
-
-func update_latency(new_latency: float):
-	$ui/Log.text = str(round(new_latency*1000.0)) + "ms";

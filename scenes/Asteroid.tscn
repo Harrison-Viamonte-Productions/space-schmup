@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://sprites/asteroid1.png" type="Texture" id=1]
 [ext_resource path="res://sprites/asteroid2.png" type="Texture" id=2]
 [ext_resource path="res://scripts/Asteroid.gd" type="Script" id=3]
+[ext_resource path="res://sounds/asteroid_explosion1.ogg" type="AudioStream" id=4]
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
@@ -57,7 +58,6 @@ script = ExtResource( 3 )
 
 [node name="sprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 1 )
-frame = 1
 playing = true
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]
@@ -69,5 +69,8 @@ shape = SubResource( 2 )
 autoplay = "idle"
 anims/hit = SubResource( 3 )
 anims/idle = SubResource( 4 )
+
+[node name="destroyed_sound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 4 )
 [connection signal="area_entered" from="." to="." method="_on_asteroid_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_asteroid_body_entered"]

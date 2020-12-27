@@ -33,10 +33,6 @@ frames = SubResource( 2 )
 frame = 1
 playing = true
 
-[node name="reload_timer" type="Timer" parent="."]
-wait_time = 0.2
-one_shot = true
-
 [node name="respawn_timer" type="Label" parent="."]
 visible = false
 margin_left = -19.9471
@@ -69,4 +65,3 @@ uppercase = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
-[connection signal="timeout" from="reload_timer" to="." method="_on_reload_timer_timeout"]

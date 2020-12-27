@@ -10,12 +10,17 @@ var spawn_rotation: float = 0;
 
 func _ready():
 	add_to_group("enemies");
+	$destroyed_sound.connect("finished", self, "_on_destroyedsnd_finished");
 	$sprite.rotation_degrees = spawn_rotation;
 
+func _on_destroyedsnd_finished():
+	call_deferred("queue_free");
+
 func _process(delta):
-	position-=delta*move_speed;
-	if position.x <= -100:
-		call_deferred("queue_free");
+	if !is_destroyed:
+		position-=delta*move_speed;
+		if position.x <= -100:
+			call_deferred("queue_free");
 
 func _draw():
 	pass;
@@ -24,8 +29,12 @@ func destroy():
 	if is_destroyed:
 		return;
 	is_destroyed = true;
+
+	$destroyed_sound.play();
+	$hit_zone.set_deferred("disabled", true);
+	$sprite.hide();
 	emit_signal("destroyed"); # Call it here and not in exit_tree...
-	call_deferred("queue_free");
+	#call_deferred("queue_free");
 	var stage_node = get_parent();
 	var explosion_instance = explosion_scene.instance();
 	explosion_instance.position = position;

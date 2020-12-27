@@ -23,11 +23,17 @@ _global_script_classes=[ {
 "class": "Player",
 "language": "GDScript",
 "path": "res://scripts/player.gd"
+}, {
+"base": "Area2D",
+"class": "Projectile",
+"language": "GDScript",
+"path": "res://scripts/shot.gd"
 } ]
 _global_script_class_icons={
 "CuteGrid": "",
 "LatencyCounter": "",
-"Player": ""
+"Player": "",
+"Projectile": ""
 }
 
 [application]

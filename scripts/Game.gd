@@ -21,6 +21,8 @@ signal waiting_for_players();
 signal player_list_updated(players);
 signal player_killed(killed_id);
 signal update_latency(new_latency);
+signal mute();
+signal unmute();
 
 var game_started: bool = false;
 var restarting: bool = false;
@@ -144,6 +146,8 @@ sync func start_game():
 	var arena: Node = load("res://scenes/stage.tscn").instance();
 	#arena.connect("tree_exited", self, "stage_removed");
 	connect("update_latency", arena, "update_latency");
+	connect("mute", arena, "muted");
+	connect("unmute", arena, "unmuted");
 	get_tree().get_root().add_child(arena);
 	spawn_players(arena);
 	game_started = true;
@@ -167,3 +171,15 @@ remote func process_rpc(tool_id: int, method_name: String, data: Array):
 	match tool_id:
 		TOOLS.PING_UTIL:
 			PingUtil.callv(method_name, data);
+
+# Global input
+func _input(event):
+	var is_just_pressed: bool = event.is_pressed() && !event.is_echo();
+	if Input.is_key_pressed(KEY_M) && is_just_pressed:
+		var audio_master_id: int = AudioServer.get_bus_index("Master");
+		var audio_master_muted: bool = !AudioServer.is_bus_mute(audio_master_id);
+		if audio_master_muted:
+			emit_signal("mute");
+		else:
+			emit_signal("unmute");
+		AudioServer.set_bus_mute(audio_master_id, audio_master_muted);

@@ -16,6 +16,9 @@ modulate = Color( 0.247059, 0.458824, 0.572549, 1 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="HostServer" type="Button" parent="."]
 margin_left = 96.0
@@ -36,6 +39,17 @@ margin_left = 64.0
 margin_top = 144.0
 margin_right = 224.0
 margin_bottom = 168.0
+text = "localhost"
+
+[node name="Name" type="TextEdit" parent="."]
+margin_left = 64.0
+margin_top = 34.4692
+margin_right = 224.0
+margin_bottom = 58.4692
+text = "player"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="MaxClients" type="TextEdit" parent="."]
 margin_left = 136.0
@@ -43,3 +57,6 @@ margin_top = 88.0
 margin_right = 176.0
 margin_bottom = 112.0
 text = "2"
+__meta__ = {
+"_edit_use_anchors_": false
+}

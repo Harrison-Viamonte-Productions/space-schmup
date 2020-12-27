@@ -13,6 +13,7 @@ signal revived;
 var is_alive = true;
 var can_shoot = true;
 var double_shoot = false;
+var nickname = "player"
 
 var explosion_scene = preload("res://scenes/explosion.tscn");
 var shot_scene = preload("res://scenes/shot.tscn");
@@ -23,6 +24,7 @@ var direction: Vector2 = Vector2.ZERO;
 
 func _ready():
 	add_to_group("network_nodes");
+	$name.text = nickname
 	snapshotData.pos = self.global_position;
 
 # Main player frame

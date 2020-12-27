@@ -13,7 +13,7 @@ func _ready():
 	Game.connect("player_list_updated", self, "_update_player_list");
 
 func host_server():
-	Game.host_game("Player");
+	Game.host_game($Name.text);
 	$HostServer.disabled = true;
 	var max_players: int = int($MaxClients.text);
 	if max_players == 1:
@@ -27,7 +27,7 @@ func _update_player_list(players):
 func join_server():
 	var IPAddress: String = $IP.text;
 	IPAddress = IPAddress.replace(" ", "");
-	Game.join_game(IPAddress, "Player");
+	Game.join_game(IPAddress, $Name.text);
 	$Connect.disabled = true;
 
 func _show_wait_players():

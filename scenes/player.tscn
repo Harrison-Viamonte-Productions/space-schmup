@@ -47,6 +47,24 @@ custom_fonts/font = SubResource( 3 )
 custom_colors/font_color = Color( 0.435294, 1, 0.733333, 1 )
 custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
 custom_colors/font_color_shadow = Color( 0.184314, 0.121569, 0.278431, 1 )
+align = 1
+uppercase = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="name" type="Label" parent="."]
+modulate = Color( 1, 1, 1, 0.498039 )
+margin_left = -19.9471
+margin_top = -22.8142
+margin_right = 20.0529
+margin_bottom = -8.81424
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.435294, 1, 0.733333, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0.184314, 0.121569, 0.278431, 1 )
+text = "player"
+align = 1
 uppercase = true
 __meta__ = {
 "_edit_use_anchors_": false

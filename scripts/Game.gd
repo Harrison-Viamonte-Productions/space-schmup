@@ -125,6 +125,7 @@ func spawn_players(level: Node):
 	for p_id in players:
 		var player_node: Player = player_scene.instance();
 		player_node.set_name(str(p_id));
+		player_node.nickname = players[p_id]
 		player_node.position = Vector2(50.0, 50.0+25.0*i);
 		player_node.modulate = colors_to_pick[i];
 		player_node.set_network_master(p_id);

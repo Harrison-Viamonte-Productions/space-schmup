@@ -58,9 +58,13 @@ sync func restart_map():
 	update_score(0);
 	clear_stage();
 
+func _on_player_revived():
+	players_alive+=1;
+
 func _on_player_destroyed():
 	players_alive-=1;
 	if players_alive <= 0:
+		Game.clear_players(self);
 		is_game_over = true;
 		if !is_network_master():
 			$ui/retry.text = "Waiting for server to restart...";

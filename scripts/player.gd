@@ -4,8 +4,11 @@ extends KinematicBody2D
 const SPACE_SIZE = 20.0;
 const MOVE_SPEED = 100.0;
 const CLIENT_FOLLOW_SPEED = 8.0;
+const RESPAWN_DURATION = 6;
+const SPAWN_PROTECTION_DURATION = 3.0;
 
 signal destroyed;
+signal revived;
 
 var is_alive = true;
 var can_shoot = true;
@@ -14,7 +17,8 @@ var double_shoot = false;
 var explosion_scene = preload("res://scenes/explosion.tscn");
 var shot_scene = preload("res://scenes/shot.tscn");
 var snapshotData: Dictionary = {pos = Vector2()};
-var spawn_protection_time: float = 3.0;
+var spawn_protection_time: float = SPAWN_PROTECTION_DURATION;
+var respawn_time: float = 0;
 var direction: Vector2 = Vector2.ZERO;
 
 func _ready():
@@ -25,6 +29,11 @@ func _ready():
 func _physics_process(delta):
 	if spawn_protection_time > 0.0:
 		spawn_protection_time-=delta;
+	if not is_alive:
+		respawn_time-=delta;
+		$respawn_timer.text = str(int(respawn_time));
+		if respawn_time <= 0:
+			rpc("_on_revived")
 	if is_network_master():
 		think(delta);
 	else:
@@ -51,11 +60,13 @@ func think(delta):
 	adjust_position_to_bounds();
 
 func handle_input():
+	direction = Vector2.ZERO;
+	if not is_alive:
+		return
 	if Input.is_key_pressed(KEY_SPACE) && can_shoot:
 		rpc_unreliable("shoot_missile", (Game.score >= 50));
 		can_shoot = false;
 		get_node("reload_timer").start();
-	direction = Vector2.ZERO;
 	if Input.is_key_pressed(KEY_UP):
 		direction.y -= 1.0;
 	if Input.is_key_pressed(KEY_DOWN):
@@ -89,14 +100,28 @@ func adjust_position_to_bounds():
 func _on_reload_timer_timeout():
 	can_shoot = true;
 
+sync func _on_revived():
+	if not is_alive:
+		is_alive = true
+		$sprite.show()
+		$hit_zone.set_deferred("disabled", false)
+		$respawn_timer.hide()
+		respawn_time = 0
+		spawn_protection_time = SPAWN_PROTECTION_DURATION
+		emit_signal("revived");
+
 sync func _on_destroyed():
 	if is_alive && spawn_protection_time <= 0.0:
-		call_deferred("queue_free");
 		var stage_node = get_parent();
 		var explosion_instance = explosion_scene.instance();
 		explosion_instance.position = position;
 		stage_node.add_child(explosion_instance);
 		is_alive = false;
+		$sprite.hide()
+		$hit_zone.set_deferred("disabled", true)
+		$respawn_timer.show()
+		respawn_time = RESPAWN_DURATION
+		emit_signal("destroyed");
 
 func hit_by_asteroid():
 	if is_network_master() && is_alive:
@@ -104,4 +129,3 @@ func hit_by_asteroid():
 
 func _exit_tree():
 	remove_from_group("network_nodes");
-	emit_signal("destroyed");

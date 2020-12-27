@@ -115,6 +115,10 @@ func join_game(ip, nickname):
 	host.create_client(ip, PORT);
 	get_tree().set_network_peer(host);
 
+func clear_players(level: Node):
+	for player in level.get_node("Players").get_children():
+		player.call_deferred("queue_free")
+
 func spawn_players(level: Node):
 	#Populate each player
 	var i = 0;
@@ -126,6 +130,7 @@ func spawn_players(level: Node):
 		player_node.set_network_master(p_id);
 		level.get_node("Players").add_child(player_node);
 		player_node.connect("destroyed", level, "_on_player_destroyed");
+		player_node.connect("revived", level, "_on_player_revived");
 		i+=1;
 	level.players_alive = i;
 

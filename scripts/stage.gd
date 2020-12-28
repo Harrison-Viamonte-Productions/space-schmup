@@ -96,7 +96,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 	for i in range(int(rng.randf_range(1.0, float(difficulty)))):
 		var spawnargs: Dictionary;
 		var random_cell_pos: Vector2;
-		if rng.randi() % 100 < 25:
+		if rng.randi_range(0, 100) < 25:
 			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0, new_seed);
 			random_cell_pos = enemies_grid.get_world_pos_from_cell_centered(random_cell);
 			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
@@ -106,7 +106,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 				fire_rate = rng.randf_range(0.5, 2.0),
 				speed = Vector2(100.0, 0.0)
 			};
-			if rng.randi() % 100 < 25:
+			if rng.randi_range(0, 100) % 100 < 25:
 				spawnargs.speed = Vector2(100.0, rng.randi_range(-10.0, 10.0));
 		else:
 			random_cell_pos = asteroids_grid.get_world_pos_from_cell_centered(asteroids_grid.get_random_cell(new_seed));
@@ -130,16 +130,15 @@ func get_enemy_from_spawnargs(spawnargs: Dictionary) -> Node2D:
 	match spawnargs.idspawn:
 		SPAWN_TYPE.ENEMY:
 			spawn_instance = enemy_scene.instance();
-			if (rng.randi() % 100 < 25): # spawn enemy instead of asteroid BUT CHANGE THIS LATER
-				spawn_instance.set_name(str(enemies_count));
-				if is_network_master():
-					spawn_instance.position = spawnargs.pos;
-				else:
-					spawn_instance.position = spawnargs.pos - spawnargs.move_speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
-				
-				spawn_instance.connect("destroyed", self, "_on_player_score");
-				spawn_instance.fire_rate = rng.randf_range(0.5, 3.0);
-				spawn_instance.move_speed = spawnargs.speed;
+			spawn_instance.set_name(str(enemies_count));
+			if is_network_master():
+				spawn_instance.position = spawnargs.pos;
+			else:
+				spawn_instance.position = spawnargs.pos - spawnargs.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
+		
+			spawn_instance.connect("destroyed", self, "_on_player_score");
+			spawn_instance.fire_rate = rng.randf_range(0.5, 3.0);
+			spawn_instance.move_speed = spawnargs.speed;
 		SPAWN_TYPE.ASTEROID:
 			spawn_instance = asteroid_scene.instance();
 			spawn_instance.set_name(str(enemies_count)); # For netcode in case we want to sync things in runtime with the asteroids

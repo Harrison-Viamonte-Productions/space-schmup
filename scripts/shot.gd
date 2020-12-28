@@ -1,12 +1,11 @@
 class_name Projectile
 extends Area2D
 
-const SCREEN_WIDTH = 320;
-const MOVE_SPEED = 500.0;
-
 var particles_scene: PackedScene = preload("res://scenes/Particles/ShootFX.tscn");
 var is_playing_sound: bool = true;
 var is_destroyed: bool = false;
+var fired_by: Node2D = null;
+var motion: Vector2 = Vector2.ZERO;
 
 func mute():
 	$FireSound.set_volume_db(-1000.0); #FIXME: this is just turning the volume really low :S
@@ -20,8 +19,8 @@ func _sound_finished():
 
 func _process(delta):
 	if !is_destroyed:
-		position += Vector2(MOVE_SPEED*delta, 0.0);
-		if (position.x >= SCREEN_WIDTH+8):
+		position += motion*delta;
+		if (position.x >= Game.SCREEN_WIDTH+8) or (position.x < -8):
 			is_destroyed = true;
 
 	if is_destroyed and !is_playing_sound: #To avoid sound problems.
@@ -41,3 +40,9 @@ func destroy():
 func _on_shot_area_entered(area):
 	if area.is_in_group("asteroid"):
 		pass;
+
+
+func _on_shot_body_entered(body):
+	if fired_by and typeof(fired_by) != TYPE_NIL and fired_by.is_in_group("players"):
+		return;
+	body.hit_by_asteroid(); #Fix later

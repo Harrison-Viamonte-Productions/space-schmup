@@ -36,6 +36,7 @@ func _ready():
 	add_child(tween);
 	
 	add_to_group("network_nodes");
+	add_to_group("players");
 	$name.text = nickname
 	snapshotData.pos = self.global_position;
 	
@@ -99,19 +100,23 @@ func handle_input():
 		direction.x += 1.0;
 
 sync func shoot_missile(is_double_shoot: bool):
-	var stage_node = get_parent();
+	var parent_node = get_parent();
 	var shot_instanceA: Projectile = shot_scene.instance();
 	if is_double_shoot:
 		var shot_instanceB: Projectile = shot_scene.instance();
+		shot_instanceB.motion = Vector2(500.0, 0.0);
+		shot_instanceB.fired_by = self;
 		shot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
 		shot_instanceA.position = position+Vector2(9, -5);
 		shot_instanceB.position = position+Vector2(9, 5);
 		shot_instanceB.set_network_master(self.get_network_master());
-		stage_node.add_child(shot_instanceB);
+		parent_node.add_child(shot_instanceB);
 	else:
 		shot_instanceA.position = position+Vector2(9, 0);
+	shot_instanceA.motion = Vector2(500.0, 0.0);
+	shot_instanceA.fired_by = self;
 	shot_instanceA.set_network_master(self.get_network_master());
-	stage_node.add_child(shot_instanceA);
+	parent_node.add_child(shot_instanceA);
 
 func move(delta):
 	move_and_slide(MOVE_SPEED*direction);
@@ -125,6 +130,7 @@ func hit_by_asteroid():
 		rpc("_on_destroyed");
 
 func _exit_tree():
+	remove_from_group("players");
 	remove_from_group("network_nodes");
 
 ###########################

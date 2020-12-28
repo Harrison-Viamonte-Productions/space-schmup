@@ -131,6 +131,13 @@ func get_random_cell(force_seed: int = -1) -> Vector2:
 		rng.set_seed(force_seed);
 	return Vector2(rng.randi_range(0, dim.x-1), rng.randi_range(0, dim.y-1));
 
+func get_random_cell_filter(filter_val, force_seed: int = -1) -> Vector2:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new();
+	if force_seed != -1:
+		rng.set_seed(force_seed);
+	var cells: Array = filter_cells_by_val(filter_val);
+	assert( cells.size() > 0 ); # Do we really want an assert here?
+	return cells[rng.randi_range(0, cells.size()-1)];
 ######################
 # To draw the grid, in a _draw method use for each line in lines, being lines what get_lines return
 #	draw_line(line[0], line[1], Color(0, 0, 255), 1);

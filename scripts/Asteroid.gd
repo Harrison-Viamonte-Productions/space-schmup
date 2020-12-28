@@ -1,7 +1,6 @@
 extends Area2D
 
 var explosion_scene = preload("res://scenes/explosion.tscn");
-
 export var move_speed: Vector2 = Vector2(100.0, 0.0);
 export var health: int = 1;
 var is_destroyed = false;
@@ -21,9 +20,6 @@ func _process(delta):
 		position-=delta*move_speed;
 		if position.x <= -100:
 			call_deferred("queue_free");
-
-func _draw():
-	pass;
 
 func destroy():
 	if is_destroyed:

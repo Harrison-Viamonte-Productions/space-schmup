@@ -13,15 +13,22 @@ const POINT_PER_LIFE = 100;
 const START_LIVES = 3;
 
 var is_game_over = false;
-var asteroid = preload("res://scenes/Asteroid.tscn");
+var asteroid_scene = preload("res://scenes/Asteroid.tscn");
+var enemy_scene = preload("res://scenes/Enemy.tscn");
 var enemies_count: int = 0; #Important for netcode
 var score: int = 0;
 var players_alive: int = 0;
 var lives = START_LIVES;
 
 #Procedural generation stuff
-var map_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
+var asteroids_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
+var enemies_grid: CuteGrid = CuteGrid.new(32, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
 var rng: RandomNumberGenerator = RandomNumberGenerator.new();
+
+enum SPAWN_TYPE {
+	ASTEROID,
+	ENEMY
+};
 
 func _ready():
 	# Let's implement the snapshot code in the stage and not in the singleton, because I am using Godot way of doing netcode
@@ -83,38 +90,75 @@ sync func generate_enemies(current_score: int, new_seed: int):
 	rng.set_seed(new_seed); # GOLD <3
 	var difficulty = round(log_2(float(current_score+1))+0.51);
 	var scaleMax = 1.0+log_4(float(current_score+1))/6.0;
-	var enemies: Array = [];
+	var spawn_data: Array = [];
+	enemies_grid.clear_grid(0); #0 being not used
+	
 	for i in range(int(rng.randf_range(1.0, float(difficulty)))):
-		var random_cell_pos: Vector2 = map_grid.get_world_pos_from_cell_centered(map_grid.get_random_cell(new_seed));
-		var enemy_spawnargs: Dictionary = {
-			scale = rng.randf_range(1.0, scaleMax),
-			pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
-			speed = Vector2(rng.randf_range(50.0, 50.0+30.0*difficulty), rng.randi_range(-15.0, 15.0)),
-			health = 0,
-			rotation = rng.randi_range(-25, 25)
-		};
-		enemy_spawnargs.health = round((enemy_spawnargs.scale-1.0)*6.0+2.0);
-		enemies.append(enemy_spawnargs);
-
+		var spawnargs: Dictionary;
+		var random_cell_pos: Vector2;
+		if rng.randi() % 100 < 25:
+			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0, new_seed);
+			random_cell_pos = enemies_grid.get_world_pos_from_cell_centered(random_cell);
+			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
+			spawnargs = {
+				idspawn = SPAWN_TYPE.ENEMY,
+				pos =  Vector2(Game.SCREEN_WIDTH + random_cell_pos.x, random_cell_pos.y),
+				fire_rate = rng.randf_range(0.5, 2.0),
+				speed = Vector2(100.0, 0.0)
+			};
+			if rng.randi() % 100 < 25:
+				spawnargs.speed = Vector2(100.0, rng.randi_range(-10.0, 10.0));
+		else:
+			random_cell_pos = asteroids_grid.get_world_pos_from_cell_centered(asteroids_grid.get_random_cell(new_seed));
+			spawnargs = {
+				idspawn = SPAWN_TYPE.ASTEROID,
+				scale = rng.randf_range(1.0, scaleMax),
+				pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
+				speed = Vector2(rng.randf_range(50.0, 50.0+30.0*difficulty), rng.randi_range(-15.0, 15.0)),
+				health = 0,
+				rotation = rng.randi_range(-25, 25)
+			};
+			spawnargs.health = round((spawnargs.scale-1.0)*6.0+2.0);
+		
+		spawn_data.append(spawnargs);
 	#We can do some post-proccess here if we want before spawning the enemies!
 	#post_process()....	
-	spawn_enemies(enemies);
+	spawn_enemies(spawn_data);
+
+func get_enemy_from_spawnargs(spawnargs: Dictionary) -> Node2D:
+	var spawn_instance: Node2D;
+	match spawnargs.idspawn:
+		SPAWN_TYPE.ENEMY:
+			spawn_instance = enemy_scene.instance();
+			if (rng.randi() % 100 < 25): # spawn enemy instead of asteroid BUT CHANGE THIS LATER
+				spawn_instance.set_name(str(enemies_count));
+				if is_network_master():
+					spawn_instance.position = spawnargs.pos;
+				else:
+					spawn_instance.position = spawnargs.pos - spawnargs.move_speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
+				
+				spawn_instance.connect("destroyed", self, "_on_player_score");
+				spawn_instance.fire_rate = rng.randf_range(0.5, 3.0);
+				spawn_instance.move_speed = spawnargs.speed;
+		SPAWN_TYPE.ASTEROID:
+			spawn_instance = asteroid_scene.instance();
+			spawn_instance.set_name(str(enemies_count)); # For netcode in case we want to sync things in runtime with the asteroids
+			if is_network_master():
+				spawn_instance.position = spawnargs.pos;
+			else:
+				spawn_instance.position = spawnargs.pos - spawnargs.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
+			spawn_instance.move_speed = spawnargs.speed;
+			spawn_instance.health = spawnargs.health;
+			spawn_instance.scale = Vector2(spawnargs.scale, spawnargs.scale);
+			spawn_instance.connect("destroyed", self, "_on_player_score");
+			spawn_instance.spawn_rotation = spawnargs.rotation;
+	return spawn_instance;
 
 func spawn_enemies(to_spawn: Array):
-	for enemy in to_spawn:
-		var asteroid_instance: Node2D = asteroid.instance();
-		asteroid_instance.set_name(str(enemies_count)); # For netcode in case we want to sync things in runtime with the asteroids
+	for spawnargs in to_spawn:
+		var spawn_instance: Node2D = get_enemy_from_spawnargs(spawnargs);
 		enemies_count+=1;
-		if is_network_master():
-			asteroid_instance.position = enemy.pos;
-		else:
-			asteroid_instance.position = enemy.pos - enemy.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
-		asteroid_instance.move_speed = enemy.speed;
-		asteroid_instance.health = enemy.health;
-		asteroid_instance.scale = Vector2(enemy.scale, enemy.scale);
-		asteroid_instance.connect("destroyed", self, "_on_player_score");
-		asteroid_instance.spawn_rotation = enemy.rotation;
-		get_node("Enemies").add_child(asteroid_instance);
+		get_node("Enemies").add_child(spawn_instance);
 
 sync func update_score(new_score):
 	score = new_score;

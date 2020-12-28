@@ -32,3 +32,4 @@ playing = true
 stream = ExtResource( 4 )
 volume_db = -10.0
 [connection signal="area_entered" from="." to="." method="_on_shot_area_entered"]
+[connection signal="body_entered" from="." to="." method="_on_shot_body_entered"]

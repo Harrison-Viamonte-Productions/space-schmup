@@ -44,7 +44,6 @@ func _ready():
 	
 	$ui/retry.hide();
 	update_lives(START_LIVES);
-	update_score(300);
 
 func clear_stage():
 	enemies_count = 0;
@@ -73,8 +72,8 @@ func _input(event):
 
 sync func restart_map():
 	get_tree().call_group("enemies", "call_deferred", "queue_free");
-	score = 300;
-	Game.score = 300;
+	score = 0;
+	Game.score = 0;
 	is_game_over = false;
 	Game.spawn_players(self);
 	$ui/retry.hide();

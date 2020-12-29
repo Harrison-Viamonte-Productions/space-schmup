@@ -8,7 +8,6 @@ export var fire_rate: float = 1.0;
 var is_destroyed = false;
 signal destroyed;
 
-
 func _ready():
 	self.connect("area_entered", self, "_on_enemy_area_entered");
 	self.connect("body_entered", self, "_on_enemy_body_entered");
@@ -44,7 +43,7 @@ func _on_enemy_area_entered(area):
 
 func _on_enemy_body_entered(body):
 	health = 0;
-	body.hit_by_asteroid(); #actually change this to just "hit" probably in player
+	body.hit();
 	if !is_destroyed && health <= 0:
 		destroy();
 

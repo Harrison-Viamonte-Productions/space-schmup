@@ -13,6 +13,7 @@ func mute():
 func _ready():
 	$FireSound.connect("finished", self, "_sound_finished");
 	$FireSound.play();
+	add_to_group("projectiles")
 
 func _sound_finished():
 	is_playing_sound = false;
@@ -27,10 +28,8 @@ func _process(delta):
 		call_deferred("queue_free");
 
 func destroy():
-	collision_layer = 0; # Disable collisions jut in case
-	collision_mask = 0;
-		
-	#call_deferred("queue_free");
+	set_deferred("monitorable", false)
+	set_deferred("monitoring", false)
 	$sprite.hide();
 	is_destroyed = true;
 	var particle_fx: Node2D = particles_scene.instance();
@@ -41,8 +40,10 @@ func _on_shot_area_entered(area):
 	if area.is_in_group("asteroid"):
 		pass;
 
-
 func _on_shot_body_entered(body):
 	if fired_by and typeof(fired_by) != TYPE_NIL and fired_by.is_in_group("players"):
 		return;
-	body.hit_by_asteroid(); #Fix later
+	body.hit(); #Fix later
+
+func _exit_tree():
+	remove_from_group("projectiles")

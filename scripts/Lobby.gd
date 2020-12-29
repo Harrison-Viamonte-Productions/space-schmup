@@ -1,7 +1,5 @@
 extends Control
 
-var clients_joined: int = 1;
-
 func _ready():
 	$HostServer.connect("pressed", self, "host_server");
 	$Connect.connect("pressed", self, "join_server");

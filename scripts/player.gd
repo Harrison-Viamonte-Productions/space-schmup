@@ -7,7 +7,12 @@ const CLIENT_FOLLOW_SPEED = 8.0;
 const RESPAWN_DURATION = 6;
 const SPAWN_PROTECTION_DURATION = 3.0;
 const SPAWN_PROTECTION_TIMEFX = 0.075; # Secs
-const FIRE_RATE = 0.25; # secs. idea: maybe this can be dinamic?
+const MIN_FIRE_RATE = 0.125
+const MAX_FIRE_RATE = 0.3
+const POINTS_TO_INCREASE_FIRE_RATE = 75
+const INCREASE_FIRE_RATE_STEP = 0.025
+var fire_rate = MAX_FIRE_RATE; # secs. idea: maybe this can be dinamic?
+const DOUBLE_SHOOT_SCORE = 50
 
 signal destroyed;
 signal revived;
@@ -85,9 +90,9 @@ func handle_input():
 	if not is_alive:
 		return
 	if Input.is_key_pressed(KEY_SPACE) && can_shoot:
-		rpc_unreliable("shoot_missile", (Game.score >= 50));
+		rpc_unreliable("shoot_missile", double_shoot);
 		can_shoot = false;
-		tween.interpolate_callback(self, FIRE_RATE, "enable_shoot");
+		tween.interpolate_callback(self, fire_rate, "enable_shoot");
 		tween.start();
 
 	if Input.is_key_pressed(KEY_UP):
@@ -125,7 +130,7 @@ func adjust_position_to_bounds():
 	position.x = clamp(position.x, SPACE_SIZE/2.0, Game.SCREEN_WIDTH-SPACE_SIZE/2.0);
 	position.y = clamp(position.y, SPACE_SIZE/2.0, Game.SCREEN_HEIGHT-SPACE_SIZE/2.0);
 
-func hit_by_asteroid():
+func hit():
 	if is_network_master() && is_alive:
 		rpc("_on_destroyed");
 
@@ -162,6 +167,12 @@ sync func _on_destroyed():
 		respawn_time = RESPAWN_DURATION
 		emit_signal("destroyed");
 
+func on_score_changed(new_score):
+	if new_score >= DOUBLE_SHOOT_SCORE:
+		double_shoot = true
+	if new_score % POINTS_TO_INCREASE_FIRE_RATE == 0:
+		fire_rate = clamp(fire_rate - INCREASE_FIRE_RATE_STEP, MIN_FIRE_RATE, MAX_FIRE_RATE)
+
 ###########################
 # Timers and tweens handlers
 #########################
@@ -171,7 +182,6 @@ func disable_shoot():
 
 func enable_shoot():
 	can_shoot = true;
-
 
 func _on_SpawnProtectionFxTimer_timeout():
 	if spawn_protection_time > 0.0:

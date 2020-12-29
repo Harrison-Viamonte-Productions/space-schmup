@@ -25,10 +25,8 @@ signal mute();
 signal unmute();
 
 var game_started: bool = false;
-var restarting: bool = false;
 var player_nickname: String = "Player";
 var players = {};
-var score: int = 0;
 var PingUtil: LatencyCounter = LatencyCounter.new(self, "update_latency", TOOLS.PING_UTIL); # Tool.
 
 var colors_to_pick: Array = [
@@ -141,7 +139,6 @@ sync func start_game():
 	if game_started: 
 		return; #FIXME: This should never happen
 
-	restarting = false;
 	#Load the main game scene
 	var arena: Node = load("res://scenes/stage.tscn").instance();
 	#arena.connect("tree_exited", self, "stage_removed");

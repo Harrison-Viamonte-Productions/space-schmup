@@ -46,6 +46,6 @@ func _on_asteroid_area_entered(area):
 
 func _on_asteroid_body_entered(body):
 	health = 0;
-	body.hit_by_asteroid();
+	body.hit();
 	if !is_destroyed && health <= 0:
 		destroy();

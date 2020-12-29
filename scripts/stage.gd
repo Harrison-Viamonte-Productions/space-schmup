@@ -19,6 +19,8 @@ var enemies_count: int = 0; #Important for netcode
 var score: int = 0;
 var players_alive: int = 0;
 var lives = START_LIVES;
+var difficulty_curve: float = 0.0;
+var max_difficulty = 0;
 
 #Procedural generation stuff
 var asteroids_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
@@ -46,6 +48,8 @@ func _ready():
 	update_lives(START_LIVES);
 
 func clear_stage():
+	difficulty_curve = 0.0
+	max_difficulty = 0
 	enemies_count = 0;
 	rng.randomize();
 
@@ -71,9 +75,9 @@ func _input(event):
 		rpc("restart_map");
 
 sync func restart_map():
-	get_tree().call_group("enemies", "call_deferred", "queue_free");
+	get_tree().call_group("enemies", "call_deferred", "queue_free") #I think it is redundant to use call_deferred
+	get_tree().call_group("projectiles", "call_deferred", "queue_free")
 	score = 0;
-	Game.score = 0;
 	is_game_over = false;
 	Game.spawn_players(self);
 	$ui/retry.hide();
@@ -88,11 +92,15 @@ func _on_spawn_timer_timeout():
 
 sync func generate_enemies(current_score: int, new_seed: int):
 	rng.set_seed(new_seed); # GOLD <3
-	var difficulty = round(log_2(float(current_score+1))+0.51);
+	if max_difficulty == 0 or difficulty_curve == 0:
+		max_difficulty = rng.randi_range(8.0, 12.0)
+		difficulty_curve = rng.randf_range(0.4, 0.95)
+	#var difficulty = round(log_2(float(current_score+1))/2.0+0.51);
+	var difficulty = round(calculate_difficulty(float(current_score), 1000.0, max_difficulty))
 	var scaleMax = 1.0+log_4(float(current_score+1))/6.0;
 	var spawn_data: Array = [];
 	enemies_grid.clear_grid(0); #0 being not used
-	
+
 	for i in range(int(rng.randf_range(1.0, float(difficulty)))):
 		var spawnargs: Dictionary;
 		var random_cell_pos: Vector2;
@@ -114,7 +122,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 				idspawn = SPAWN_TYPE.ASTEROID,
 				scale = rng.randf_range(1.0, scaleMax),
 				pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
-				speed = Vector2(rng.randf_range(50.0, 50.0+30.0*difficulty), rng.randi_range(-15.0, 15.0)),
+				speed = Vector2(rng.randf_range(50.0, 50+32.0*(difficulty-1))+rng.randf_range(-10.0, 10.0), rng.randi_range(-15.0, 15.0)),
 				health = 0,
 				rotation = rng.randi_range(-25, 25)
 			};
@@ -161,9 +169,7 @@ func spawn_enemies(to_spawn: Array):
 
 sync func update_score(new_score):
 	score = new_score;
-	Game.score = new_score;
 	get_node("ui/score").text = "Score: " + str(score);
-
 	if score % POINT_PER_LIFE == 0:
 		update_lives(lives+1)
 
@@ -173,6 +179,7 @@ sync func update_score(new_score):
 
 func _on_player_score():
 	score += 1;
+	get_tree().call_group("players", "on_score_changed", score)
 	if is_network_master():
 		rpc("update_score", score);
 
@@ -207,3 +214,19 @@ func log_2(val: float) -> float:
 
 func log_4(val: float) -> float:
 	return log(val)/log(4.0);
+
+# Formula I made to get some curve of difficulty
+func calculate_difficulty(score: float, end_score: float, end_difficulty: float) -> float:
+	var x = score/end_score
+	var difficulty_scale: float = half_sigmoid_curve(x, difficulty_curve)
+	return (end_difficulty-1.0)*difficulty_scale+1.0
+
+func sigmoid_curve(x: float, grow: float) -> float:
+	x = clamp(x, 0.0, 1.0)
+	grow = clamp(grow, 0.0, 1.0)
+	if (1.0-x) == 0:
+		return 1.0
+	return 1.0/(1.0+pow((x/(1.0-x)), -grow))
+
+func half_sigmoid_curve(x: float, grow: float) -> float:
+	return clamp(2.0*sigmoid_curve(0.5*x, grow), 0.0, 1.0)

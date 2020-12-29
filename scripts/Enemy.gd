@@ -2,10 +2,12 @@ extends Area2D
 
 var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn");
 var shoot_scene: PackedScene = preload("res://scenes/shot.tscn");
-export var move_speed: Vector2 = Vector2(100.0, 0.0);
+export var move_speed: Vector2 = Vector2(70.0, 0.0);
 export var health: int = 3;
 export var fire_rate: float = 1.0;
 var is_destroyed = false;
+var base_speed: Vector2 = Vector2.ZERO
+
 signal destroyed;
 
 func _ready():
@@ -18,7 +20,7 @@ func _ready():
 
 func _process(delta):
 	if !is_destroyed:
-		position-=delta*move_speed;
+		position-=delta*(move_speed+base_speed);
 		if position.x <= -100:
 			call_deferred("queue_free");
 
@@ -55,6 +57,9 @@ func _on_shoot_timer_timeout():
 	shoot_instance.modulate = Color(0.75, 0.25, 0.25); 
 	shoot_instance.fired_by = self;
 	shoot_instance.position = position+Vector2(-9, 0);
-	shoot_instance.motion = Vector2(-200, move_speed.y);
+	shoot_instance.motion = Vector2(-200, -move_speed.y)-base_speed;
 	parent_node.call_deferred("add_child", shoot_instance);
 	#parent_node.add_child(shoot_instance);
+
+func on_level_speed_changed(new_speed):
+	base_speed = new_speed

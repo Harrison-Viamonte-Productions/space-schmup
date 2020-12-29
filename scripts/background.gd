@@ -1,6 +1,6 @@
 extends Sprite
 
-var scroll_speed = 30.0;
+var scroll_speed = 0; # Set by the map
 
 func _process(delta):
 	position += Vector2(-scroll_speed*delta, 0.0);

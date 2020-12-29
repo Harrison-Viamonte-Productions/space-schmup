@@ -42,7 +42,10 @@ func _ready():
 	
 	add_to_group("network_nodes");
 	add_to_group("players");
-	$name.text = nickname
+	if Game.is_singleplayer_game():
+		$name.hide()
+	else:
+		$name.text = nickname
 	snapshotData.pos = self.global_position;
 	
 	enable_spawn_protection();
@@ -58,9 +61,10 @@ func _physics_process(delta):
 	if not is_alive:
 		respawn_time-=delta;
 		$respawn_timer.text = str(int(respawn_time));
-		if respawn_time <= 0:
-			rpc("_on_revived")
-	if is_network_master():
+		if respawn_time <= 0 and Game.is_network_master_or_sp(self):
+			Game.rpc_sp(self, "_on_revived")
+			respawn_time = 0
+	if Game.is_network_master_or_sp(self):
 		think(delta);
 	else:
 		cs_think(delta);
@@ -69,7 +73,7 @@ remote func receive_snapshot(data: Dictionary):
 	snapshotData = data;
 
 func _on_snapshot():
-	if !is_network_master():
+	if Game.is_singleplayer_game() or !is_network_master():
 		return;
 	var sendData: Dictionary = {pos = Vector2()};
 	sendData.pos = global_position;
@@ -90,7 +94,7 @@ func handle_input():
 	if not is_alive:
 		return
 	if Input.is_key_pressed(KEY_SPACE) && can_shoot:
-		rpc_unreliable("shoot_missile", double_shoot);
+		Game.rpc_unreliable_sp(self, "shoot_missile", [double_shoot]);
 		can_shoot = false;
 		tween.interpolate_callback(self, fire_rate, "enable_shoot");
 		tween.start();
@@ -131,8 +135,8 @@ func adjust_position_to_bounds():
 	position.y = clamp(position.y, SPACE_SIZE/2.0, Game.SCREEN_HEIGHT-SPACE_SIZE/2.0);
 
 func hit():
-	if is_network_master() && is_alive:
-		rpc("_on_destroyed");
+	if Game.is_network_master_or_sp(self) && is_alive:
+		Game.rpc_sp(self, "_on_destroyed");
 
 func _exit_tree():
 	remove_from_group("players");

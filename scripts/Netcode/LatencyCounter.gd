@@ -19,7 +19,7 @@ func _init(father: Node, signal_to_fire: String, tool_id: int):
 	
 
 func update(delta):
-	if _father.get_tree().has_network_peer() && !_father.is_network_master():
+	if _father.get_tree().has_network_peer() && !_father.is_network_master() && (_father.get_tree().get_network_peer().get_connection_status() == _father.get_tree().get_network_peer().CONNECTION_CONNECTED):
 		if _ping_counter <=  0.0 || _ping_counter > 2.0:
 			_client_send_ping(); #resend, just in case.
 		_ping_counter+=delta;

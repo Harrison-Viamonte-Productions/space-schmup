@@ -6,6 +6,7 @@ export var health: int = 1;
 var is_destroyed = false;
 signal destroyed;
 var spawn_rotation: float = 0;
+var move_mod: float = 1;
 
 func _ready():
 	add_to_group("enemies");
@@ -17,7 +18,7 @@ func _on_destroyedsnd_finished():
 
 func _process(delta):
 	if !is_destroyed:
-		position-=delta*move_speed;
+		position-=delta*move_speed*move_mod;
 		if position.x <= -100:
 			call_deferred("queue_free");
 
@@ -36,10 +37,14 @@ func destroy():
 	explosion_instance.position = position;
 	stage_node.add_child(explosion_instance);
 
+func hit():
+	health-=1;
+	move_mod*=0.7;
+	$AnimationPlayer.play("hit");
+
 func _on_asteroid_area_entered(area):
 	if area.is_in_group("shot"):
-		health-=1;
-		$AnimationPlayer.play("hit");
+		hit();
 		area.destroy();
 	if !is_destroyed && health <= 0:
 		destroy();

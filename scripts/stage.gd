@@ -17,6 +17,7 @@ const START_LEVEL_SPEED = 30.0
 const ASTEROID_MAX_SCALE = 2.25
 
 var is_game_over = false;
+var game_finished = false;
 var asteroid_scene = preload("res://scenes/Asteroid.tscn");
 var enemy_scene = preload("res://scenes/Enemy.tscn");
 var enemies_count: int = 0; #Important for netcode
@@ -24,6 +25,7 @@ var score: int = 0;
 var players_alive: int = 0;
 var level_speed: float = START_LEVEL_SPEED; #The speed the background moves (or our base player speed illusion)
 var lives = START_LIVES;
+var game_difficulty: int = Game.EASY
 
 #Procedural generation stuff
 var asteroids_grid: CuteGrid = CuteGrid.new(16, Vector2(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT));
@@ -53,8 +55,32 @@ func _ready():
 	self.add_child(SnapshotTimer);
 	SnapshotTimer.start();
 	$background.scroll_speed = level_speed
-	$ui/retry.hide();
 	update_lives(START_LIVES);
+	init_level_hud()
+
+func init_level_hud():
+	$ui/retry.hide();
+	$ui/win_label.hide();
+	$ui/DifficultyProgress/Easy.hide()
+	$ui/DifficultyProgress/Hard.hide()
+	$ui/DifficultyProgress/Medium.hide()
+	$ui/DifficultyProgress/Impossible.hide()
+	match game_difficulty:
+		Game.EASY:
+			$ui/DifficultyProgress/Easy.show()
+		Game.MEDIUM:
+			$ui/DifficultyProgress/Easy.show()
+			$ui/DifficultyProgress/Medium.show()
+		Game.HARD:
+			$ui/DifficultyProgress/Easy.show()
+			$ui/DifficultyProgress/Medium.show()
+			$ui/DifficultyProgress/Hard.show()
+		Game.IMPOSSIBLE:
+			$ui/DifficultyProgress/Easy.show()
+			$ui/DifficultyProgress/Medium.show()
+			$ui/DifficultyProgress/Hard.show()
+			$ui/DifficultyProgress/Impossible.show()
+
 
 func clear_stage():
 	pcg_data_configured = false
@@ -68,12 +94,16 @@ sync func update_lives(new_lives: int):
 	lives = new_lives;
 	$ui/lives.text = "Lives: " + str(lives)
 	if lives <= 0:
-		Game.clear_players(self);
-		is_game_over = true;
+		Game.clear_players(self)
+		is_game_over = true
 		if !Game.is_network_master_or_sp(self):
-			$ui/retry.text = "Waiting for server to restart...";
-		$ui/retry.show();
+			$ui/retry.text = "Waiting for server to restart..."
+		$ui/retry.show()
 
+func game_was_finished():
+	game_finished = true
+	$ui/win_label.show()
+	
 func _on_snapshot():
 	get_tree().call_group("network_nodes","_on_snapshot");
 
@@ -82,22 +112,24 @@ func _input(event):
 	if Input.is_key_pressed(KEY_ESCAPE):
 		Game._stop_game("Game stopped")
 
-	if is_game_over && Input.is_key_pressed(KEY_ENTER) &&  Game.is_network_master_or_sp(self):
+	if (is_game_over or game_finished) && Input.is_key_pressed(KEY_ENTER) &&  Game.is_network_master_or_sp(self):
 		Game.rpc_sp(self, "restart_map");
 
 sync func restart_map():
 	get_tree().call_group("enemies", "call_deferred", "queue_free") #I think it is redundant to use call_deferred
 	get_tree().call_group("projectiles", "call_deferred", "queue_free")
 	score = 0;
-	is_game_over = false;
+	is_game_over = false
+	game_finished = false
 	Game.spawn_players(self);
 	$ui/retry.hide();
+	$ui/win_label.hide();
 	update_score(0);
 	clear_stage();
 	update_lives(START_LIVES);
 
 func _on_spawn_timer_timeout():
-	if !Game.is_network_master_or_sp(self):
+	if !Game.is_network_master_or_sp(self) or game_finished:
 		return;
 	#We keep sending the seed always to not put in risk the fact that maybe a missing packet (even while using rpc!) 
 	#made the client not receive the new sync and then BOOM, desync everywhere!
@@ -105,20 +137,28 @@ func _on_spawn_timer_timeout():
 
 func adjut_level_properties():
 	if !pcg_data_configured:
-		max_difficulty = rng.randi_range(8.0, 12.0)
+		match game_difficulty:
+			Game.EASY:
+				max_difficulty = rng.randi_range(4.0, 6.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*1, START_LEVEL_SPEED*2)
+			Game.MEDIUM:
+				max_difficulty = rng.randi_range(6.0, 9.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*2, START_LEVEL_SPEED*4)
+			Game.HARD:
+				max_difficulty = rng.randi_range(8.0, 12.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*3, START_LEVEL_SPEED*6)
+			Game.IMPOSSIBLE: #Not even fair,but that's the point
+				max_difficulty = rng.randi_range(11.0, 15.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*5, START_LEVEL_SPEED*8)
 		difficulty_curve = rng.randf_range(0.4, 0.95)
-		max_level_speed = rng.randi_range(START_LEVEL_SPEED*3, START_LEVEL_SPEED*6)
 		pcg_data_configured = true
 
 sync func generate_enemies(current_score: int, new_seed: int):
 	rng.set_seed(new_seed); # GOLD <3
 	adjut_level_properties()
 
-	#var difficulty = round(log_2(float(current_score+1))/2.0+0.51);
 	var difficulty = round(calculate_difficulty(float(current_score), SCORE_LIMIT, max_difficulty))
 	var scaleMax = (ASTEROID_MAX_SCALE-1.0)*get_difficulty_scale(float(current_score), SCORE_LIMIT)+1.0
-	print(scaleMax)
-	#var scaleMax = 1.0+log_4(float(current_score+1))/6.0;
 	var spawn_data: Array = [];
 	enemies_grid.clear_grid(0); #0 being not used
 	for i in range(int(rng.randf_range(1.0, float(difficulty)))):
@@ -130,7 +170,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
 			spawnargs = {
 				idspawn = SPAWN_TYPE.ENEMY,
-				pos =  Vector2(Game.SCREEN_WIDTH + random_cell_pos.x, random_cell_pos.y),
+				pos =  Vector2(Game.SCREEN_WIDTH + 64 + random_cell_pos.x, random_cell_pos.y),
 				fire_rate = clamp(rng.randf_range(1.0, 4.0)/float(difficulty), 0.2, 4.0),
 				speed = Vector2(40.0, 0.0) # Not random yet
 			};
@@ -141,7 +181,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			spawnargs = {
 				idspawn = SPAWN_TYPE.ASTEROID,
 				scale = rng.randf_range(1.0, scaleMax),
-				pos =  Vector2(Game.SCREEN_WIDTH + 32, random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
+				pos =  Vector2(Game.SCREEN_WIDTH + rng.randi_range(64, 128), random_cell_pos.y+rng.randi_range(-8, 8)), # add that little change to make it feel more natural
 				speed = Vector2(rng.randf_range(0.0, 16.0*difficulty)+rng.randf_range(0.0, 16.0), rng.randi_range(-15.0, 15.0)),
 				health = 0,
 				rotation = rng.randi_range(-25, 25)
@@ -195,6 +235,8 @@ func update_level_speed(new_speed: float):
 sync func update_score(new_score):
 	score = new_score;
 	get_node("ui/score").text = "Score: " + str(score);
+	if score >= SCORE_LIMIT:
+		game_was_finished()
 	if score % POINT_PER_LIFE == 0:
 		update_lives(lives+1)
 	#if score % POINT_INCREMENT_SPEED == 0:
@@ -216,7 +258,7 @@ func _on_player_revived():
 func _on_player_destroyed():
 	players_alive-=1;
 	if players_alive <= 0:
-		if Game.is_network_master_or_sp(self): #Let the server handle this to avoid desync player lives between clients
+		if Game.is_network_master_or_sp(self) and !game_finished: #Let the server handle this to avoid desync player lives between clients
 			Game.rpc_sp(self, "update_lives", [lives-1]);
 
 
@@ -236,16 +278,9 @@ func update_latency(new_latency: float):
 ###############
 # MISC & Util
 ###############
-func log_2(val: float) -> float:
-	return log(val)/log(2.0);
-
-func log_4(val: float) -> float:
-	return log(val)/log(4.0);
-
 func get_difficulty_scale(score: float, end_score: float) -> float:
 	return half_sigmoid_curve(score/end_score, difficulty_curve) # Returns a value between 0 and 1
 
-# Formula I made to get some curve of difficulty
 func calculate_difficulty(score: float, end_score: float, end_difficulty: float) -> float:
 	return (end_difficulty-1.0)*get_difficulty_scale(score, end_score)+1.0
 
@@ -261,4 +296,3 @@ func sigmoid_curve(x: float, grow: float) -> float:
 
 func half_sigmoid_curve(x: float, grow: float) -> float:
 	return clamp(2.0*sigmoid_curve(0.5*x, grow), 0.0, 1.0)
-

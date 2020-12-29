@@ -76,6 +76,49 @@ margin_right = 185.0
 margin_bottom = 86.0
 text = "QUIT GAME"
 
+[node name="SPGame" type="MarginContainer" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -92.5
+margin_top = -22.0
+margin_right = 92.5
+grow_vertical = 0
+theme = ExtResource( 4 )
+custom_constants/margin_bottom = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SPGame"]
+margin_right = 185.0
+margin_bottom = 54.0
+custom_constants/separation = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SPGame/VBoxContainer"]
+margin_right = 185.0
+margin_bottom = 22.0
+
+[node name="Label" type="Label" parent="SPGame/VBoxContainer/HBoxContainer"]
+margin_top = 7.0
+margin_right = 44.0
+margin_bottom = 15.0
+text = "SKILL:"
+
+[node name="DifficultySP" type="OptionButton" parent="SPGame/VBoxContainer/HBoxContainer"]
+margin_left = 48.0
+margin_right = 115.0
+margin_bottom = 22.0
+text = "SKILL"
+
+[node name="StartSP" type="Button" parent="SPGame/VBoxContainer"]
+margin_top = 32.0
+margin_right = 185.0
+margin_bottom = 54.0
+text = "START GAME"
+
 [node name="Lobby" type="MarginContainer" parent="."]
 visible = false
 anchor_left = 0.5
@@ -94,7 +137,7 @@ __meta__ = {
 
 [node name="panel" type="PanelContainer" parent="Lobby"]
 margin_right = 185.0
-margin_bottom = 100.0
+margin_bottom = 103.0
 rect_min_size = Vector2( 0, 100 )
 custom_styles/panel = SubResource( 1 )
 
@@ -102,7 +145,7 @@ custom_styles/panel = SubResource( 1 )
 margin_left = 2.0
 margin_top = 2.0
 margin_right = 183.0
-margin_bottom = 107.0
+margin_bottom = 101.0
 custom_constants/margin_right = 5
 custom_constants/margin_top = 5
 custom_constants/margin_left = 5
@@ -112,7 +155,7 @@ custom_constants/margin_bottom = 5
 margin_left = 5.0
 margin_top = 5.0
 margin_right = 176.0
-margin_bottom = 100.0
+margin_bottom = 94.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 custom_constants/separation = 7
@@ -125,20 +168,30 @@ custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
 text = "Player list:"
 
 [node name="Players" type="Label" parent="Lobby/panel/MarginContainer/vbox"]
-margin_top = 14.0
+margin_top = 15.0
 margin_right = 171.0
-margin_bottom = 59.0
+margin_bottom = 60.0
 rect_min_size = Vector2( 0, 45 )
 text = "Player 1
 Player 2
 Player 3
 Player 4"
 
-[node name="StartGame" type="Button" parent="Lobby/panel/MarginContainer/vbox"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Lobby/panel/MarginContainer/vbox"]
 margin_top = 67.0
 margin_right = 171.0
 margin_bottom = 89.0
-text = "START GAME"
+
+[node name="Difficulty" type="OptionButton" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
+margin_right = 61.0
+margin_bottom = 22.0
+text = "Easy"
+
+[node name="StartGame" type="Button" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
+margin_left = 65.0
+margin_right = 117.0
+margin_bottom = 22.0
+text = "START"
 
 [node name="Multiplayer" type="VBoxContainer" parent="."]
 visible = false

@@ -9,7 +9,10 @@ onready var ExitGameBtn = $MenuButtons/VBoxContainer/Exit
 onready var MultiplayerBtn = $MenuButtons/VBoxContainer/Multiplayer
 onready var BackToMenuBtn = $Back
 onready var PlayOfflineBtn = $MenuButtons/VBoxContainer/PlayOffline
-onready var StartGameBtn = $Lobby/panel/MarginContainer/vbox/StartGame
+onready var StartGameBtn = $Lobby/panel/MarginContainer/vbox/HBoxContainer/StartGame
+onready var DifficultyOption: OptionButton = $Lobby/panel/MarginContainer/vbox/HBoxContainer/Difficulty
+onready var DifficultyOptionSP: OptionButton = $SPGame/VBoxContainer/HBoxContainer/DifficultySP
+onready var StartGameSPBtn = $SPGame/VBoxContainer/StartSP
 
 func _ready():
 	
@@ -18,23 +21,46 @@ func _ready():
 	ExitGameBtn.connect("pressed", self, "exit_game")
 	MultiplayerBtn.connect("pressed", self, "show_multiplayer_menu")
 	BackToMenuBtn.connect("pressed", self, "go_back")
-	PlayOfflineBtn.connect("pressed", self, "start_offline_game")
+	PlayOfflineBtn.connect("pressed", self, "sp_game_tab")
 	StartGameBtn.connect("pressed",self, "start_mp_game")
+	StartGameSPBtn.connect("pressed", self, "start_offline_game")
+	DifficultyOption.connect("item_selected", self, "on_difficulty_selected")
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
+	$SPGame.hide()
 	BackToMenuBtn.hide()
 	#Network signals
 	Game.connect("game_ended", self, "_reset_menu");
 	Game.connect("waiting_for_players", self, "show_lobby");
 	Game.connect("game_started", self, "_hide_menu");
 	Game.connect("player_list_updated", self, "_update_player_list");
+	DifficultyOption.clear()
+	DifficultyOptionSP.clear()
+	for skill in Game.skills:
+		DifficultyOption.add_item(skill)
+		DifficultyOptionSP.add_item(skill)
+	DifficultyOption.select(0)
+	DifficultyOptionSP.select(0)
 
 func show_lobby():
 	$Lobby.show()
 	$MenuButtons.hide()
 	$Multiplayer.hide()
+	$SPGame.hide()
 	BackToMenuBtn.show()
+	if Game.is_client():
+		DifficultyOption.set_disabled(true)
+		StartGameBtn.set_disabled(true)
+	else:
+		DifficultyOption.set_disabled(false)
+		StartGameBtn.set_disabled(false)
+
+func on_difficulty_selected(index: int):
+	Game.rpc_sp(self, "difficulty_set", [index])
+
+sync func difficulty_set(index: int):
+	DifficultyOption.select(index)
 
 func show_multiplayer_menu():
 	$Multiplayer.show()
@@ -45,6 +71,7 @@ func go_back():
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
+	$SPGame.hide()
 	BackToMenuBtn.hide()
 	HostServerBtn.disabled = false;
 	ConnectServerBtn.disabled = false;
@@ -55,11 +82,20 @@ func exit_game():
 
 func start_mp_game():
 	if get_tree().is_network_server():
-		Game.rpc("start_game");
+		var netgame_difficulty: int = clamp(DifficultyOption.get_selected(), 0, Game.skills.size()-1)
+		Game.rpc("start_game", netgame_difficulty);
+
+func sp_game_tab():
+	BackToMenuBtn.show()
+	$SPGame.show()
+	$MenuButtons.hide()
+	$Multiplayer.hide()
+	$Lobby.hide()
 
 func start_offline_game():
+	var game_difficulty: int = clamp(DifficultyOptionSP.get_selected(), 0, Game.skills.size()-1)
 	Game.register_player(Game.SERVER_NETID, PlayerNameTextEdit.text)
-	Game.start_game()
+	Game.start_game(game_difficulty)
 
 func host_server():
 	Game.host_game(PlayerNameTextEdit.text);
@@ -69,13 +105,10 @@ func host_server():
 		Game.rpc("start_game");
 
 func _update_player_list(players):
-	#var max_players: int = int(MaxClientTextEdit.text);
 	var PlayersStr: String = ""
 	for p_id in players:
 		PlayersStr += players[p_id] + str("\n")
-	$Lobby/panel/MarginContainer/vbox/Players.text = PlayersStr		
-	#if players.size() >= max_players:
-	#	Game.rpc("start_game");
+	$Lobby/panel/MarginContainer/vbox/Players.text = PlayersStr
 
 func join_server():
 	var IPAddress: String = IPTextEdit.text;
@@ -90,6 +123,7 @@ func _reset_menu():
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
+	$SPGame.hide()
 	BackToMenuBtn.hide()
 	HostServerBtn.disabled = false;
 	ConnectServerBtn.disabled = false;

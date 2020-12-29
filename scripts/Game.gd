@@ -29,6 +29,20 @@ var player_nickname: String = "Player";
 var players = {};
 var PingUtil: LatencyCounter = LatencyCounter.new(self, "update_latency", TOOLS.PING_UTIL); # Tool.
 
+var skills: Array = [
+	'Easy',
+	'Medium',
+	'Hard',
+	'Not cool'
+]
+
+enum {
+	EASY,
+	MEDIUM,
+	HARD,
+	IMPOSSIBLE
+}
+
 var colors_to_pick: Array = [
 	"e37712",
 	"6e79db",
@@ -124,6 +138,7 @@ func clear_players(level: Node):
 
 func spawn_players(level: Node):
 	#Populate each player
+	clear_players(level)
 	var i = 0;
 	for p_id in players:
 		var player_node: Player = player_scene.instance();
@@ -138,12 +153,13 @@ func spawn_players(level: Node):
 		i+=1;
 	level.players_alive = i;
 
-sync func start_game():
+sync func start_game(difficulty: int = Game.EASY):
 	if game_started: 
 		return; #FIXME: This should never happen
 
 	#Load the main game scene
 	var arena: Node = load("res://scenes/stage.tscn").instance();
+	arena.game_difficulty = difficulty
 	#arena.connect("tree_exited", self, "stage_removed");
 	connect("update_latency", arena, "update_latency");
 	connect("mute", arena, "muted");
@@ -188,7 +204,10 @@ func rpc_unreliable_sp(caller: Node, method: String, args: Array = []):
 func is_network_master_or_sp(caller: Node):
 	return is_singleplayer_game() or caller.is_network_master()
 
-func is_client_connected():
+func is_client() -> bool:
+	return get_tree().has_network_peer() and !get_tree().is_network_server()
+
+func is_client_connected() -> bool:
 	if !get_tree().has_network_peer() or get_tree().is_network_server():
 		return false;
 	return get_tree().get_network_peer().get_connection_status() == get_tree().get_network_peer().CONNECTION_CONNECTED

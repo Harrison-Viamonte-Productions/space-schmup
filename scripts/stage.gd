@@ -143,14 +143,14 @@ func adjut_level_properties():
 				max_difficulty = rng.randi_range(4.0, 6.0)
 				max_level_speed = rng.randi_range(START_LEVEL_SPEED*1, START_LEVEL_SPEED*2)
 			Game.MEDIUM:
-				max_difficulty = rng.randi_range(6.0, 9.0)
+				max_difficulty = rng.randi_range(6.0, 8.0)
 				max_level_speed = rng.randi_range(START_LEVEL_SPEED*2, START_LEVEL_SPEED*4)
 			Game.HARD:
-				max_difficulty = rng.randi_range(8.0, 12.0)
-				max_level_speed = rng.randi_range(START_LEVEL_SPEED*3, START_LEVEL_SPEED*6)
+				max_difficulty = rng.randi_range(8.0, 11.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*3, START_LEVEL_SPEED*5)
 			Game.IMPOSSIBLE: #Not even fair,but that's the point
-				max_difficulty = rng.randi_range(11.0, 15.0)
-				max_level_speed = rng.randi_range(START_LEVEL_SPEED*5, START_LEVEL_SPEED*8)
+				max_difficulty = rng.randi_range(11.0, 14.0)
+				max_level_speed = rng.randi_range(START_LEVEL_SPEED*5, START_LEVEL_SPEED*7)
 		difficulty_curve = rng.randf_range(0.4, 0.95)
 		pcg_data_configured = true
 

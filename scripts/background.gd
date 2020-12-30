@@ -4,14 +4,6 @@ const STAR_TILES: int = 3
 
 var scroll_speed = 0; # Set by the map
 onready var back_layer1: Sprite = $Back1
-onready var tile_layer1: TileMap = $TileLayer1
-onready var tile_layer2: TileMap = $TileLayer2
-onready var tile_layer3: TileMap = $TileLayer3
-
-var tile1_pos: Vector2 = Vector2.ZERO
-var tile2_pos: Vector2 = Vector2.ZERO
-var tile3_pos: Vector2 = Vector2.ZERO
-
 var tiles_parallax: Array = []
 var stars_grid: CuteGrid;
 

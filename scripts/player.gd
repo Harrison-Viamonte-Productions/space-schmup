@@ -81,12 +81,15 @@ func _on_snapshot():
 
 # Clientside think
 func cs_think(delta):
+	var vel: Vector2 = snapshotData.pos - global_position
 	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED);
+	$sprite.update_anim(vel)
 	adjust_position_to_bounds();
 
 func think(delta):
 	handle_input();
 	move(delta);
+	$sprite.update_anim(MOVE_SPEED*direction)
 	adjust_position_to_bounds();
 
 func handle_input():

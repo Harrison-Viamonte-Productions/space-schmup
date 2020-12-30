@@ -184,8 +184,9 @@ func flash_message(text):
 	$tween.start()
 
 func on_score_changed(new_score):
-	if new_score == DOUBLE_SHOOT_SCORE:
-		flash_message("SHOT UP")
+	if new_score >= DOUBLE_SHOOT_SCORE:
+		if not double_shoot:
+			flash_message("SHOT UP")
 		double_shoot = true
 	if new_score % POINTS_TO_INCREASE_FIRE_RATE == 0:
 		flash_message("RATE UP")

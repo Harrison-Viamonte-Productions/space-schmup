@@ -156,17 +156,6 @@ func move(delta):
 
 	#var velocity: Vector2 = Vector2.ZERO
 	var new_position: Vector2 = position
-	"""
-	if ignore_base_velocity:
-		velocity = delta*move_speed
-	else:
-		velocity = delta*(move_speed+base_speed)
-	
-	if current_path_to_follow >= 0 and is_on_viewport:
-		new_position-=velocity-update_and_get_path_follow_motion(current_path_to_follow, delta)
-	else:
-		new_position-=velocity
-	"""
 	update_and_get_path_follow_motion(current_path_to_follow, delta)
 	new_position+=get_current_vel()*delta
 	if current_path_to_follow >= 0  and (new_position.y < 8 or new_position.y > (Game.SCREEN_HEIGHT-8)):

@@ -102,14 +102,17 @@ func handle_input():
 		tween.interpolate_callback(self, fire_rate, "enable_shoot");
 		tween.start();
 
-	if Input.is_action_pressed("ui_up"):
-		direction.y -= 1.0;
-	if Input.is_action_pressed("ui_down"):
-		direction.y += 1.0;
-	if Input.is_action_pressed("ui_left"):
-		direction.x -= 1.0;
-	if Input.is_action_pressed("ui_right"):
-		direction.x += 1.0;
+	if Input.get_action_strength("ui_up") > 0.0:
+		direction.y -=  Input.get_action_strength("ui_up");
+	if Input.get_action_strength("ui_down") > 0.0:
+		direction.y += Input.get_action_strength("ui_down");
+	if Input.get_action_strength("ui_left") > 0.0:
+		direction.x -= Input.get_action_strength("ui_left");
+	if Input.get_action_strength("ui_right") > 0.0:
+		direction.x += Input.get_action_strength("ui_right");
+	
+	if direction.length() > 1.0:
+		direction = direction.normalized()
 
 sync func shoot_missile(is_double_shoot: bool):
 	var parent_node = get_parent();

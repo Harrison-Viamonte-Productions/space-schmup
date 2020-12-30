@@ -137,7 +137,7 @@ __meta__ = {
 
 [node name="panel" type="PanelContainer" parent="Lobby"]
 margin_right = 185.0
-margin_bottom = 103.0
+margin_bottom = 100.0
 rect_min_size = Vector2( 0, 100 )
 custom_styles/panel = SubResource( 1 )
 

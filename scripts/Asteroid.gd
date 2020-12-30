@@ -1,8 +1,11 @@
 extends Area2D
 
+const SHOOT_PUSH_FACTOR: float = 0.3
+
 var explosion_scene = preload("res://scenes/explosion.tscn");
-export var move_speed: Vector2 = Vector2(100.0, 0.0);
+export var move_speed: Vector2 = Vector2(100.0, 0.0); # I am sorry math, I know this is velocity and not speed, but I am lazy
 export var health: int = 1;
+var base_speed: Vector2 = Vector2.ZERO
 var is_destroyed = false;
 signal destroyed;
 var spawn_rotation: float = 0;
@@ -18,7 +21,7 @@ func _on_destroyedsnd_finished():
 
 func _process(delta):
 	if !is_destroyed:
-		position-=delta*move_speed*move_mod;
+		position-=delta*(move_speed*move_mod+base_speed);
 		if position.x <= -100:
 			call_deferred("queue_free");
 
@@ -39,7 +42,7 @@ func destroy():
 
 func hit():
 	health-=1;
-	move_mod*=0.7;
+	move_mod*=1.0-SHOOT_PUSH_FACTOR/scale.length(); #Push factor affected by asteroid's size
 	$AnimationPlayer.play("hit");
 
 func _on_asteroid_area_entered(area):
@@ -54,3 +57,6 @@ func _on_asteroid_body_entered(body):
 	body.hit();
 	if !is_destroyed && health <= 0:
 		destroy();
+
+func on_level_speed_changed(new_speed):
+	base_speed = new_speed

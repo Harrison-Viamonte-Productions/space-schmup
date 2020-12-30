@@ -26,6 +26,7 @@ shape = SubResource( 1 )
 
 [node name="sprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 2 )
+frame = 1
 playing = true
 
 [node name="FireSound" type="AudioStreamPlayer" parent="."]

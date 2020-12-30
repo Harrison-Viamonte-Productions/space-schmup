@@ -3,10 +3,10 @@ extends Node
 const PORT: int = 27666;
 const MAX_PLAYERS: int = 4;
 const SERVER_NETID: int = 1;
-const SNAPSHOT_DELAY = 1.0/30.0; #Msec to Sec
+const SNAPSHOT_DELAY: float = 1.0/30.0; #Msec to Sec
 const LevelScene: String = "/root/stage";
-const SCREEN_WIDTH = 320;
-const SCREEN_HEIGHT = 180;
+const SCREEN_WIDTH: int = 320;
+const SCREEN_HEIGHT: int = 180;
 
 enum TOOLS{
 	PING_UTIL,
@@ -28,6 +28,20 @@ var game_started: bool = false;
 var player_nickname: String = "Player";
 var players = {};
 var PingUtil: LatencyCounter = LatencyCounter.new(self, "update_latency", TOOLS.PING_UTIL); # Tool.
+
+var skills: Array = [
+	'Easy',
+	'Medium',
+	'Hard',
+	'Not cool'
+]
+
+enum {
+	EASY,
+	MEDIUM,
+	HARD,
+	IMPOSSIBLE
+}
 
 var colors_to_pick: Array = [
 	"e37712",
@@ -97,6 +111,9 @@ master func register_player_to_server(id, name):
 	
 	register_player(id, name);
 
+func is_singleplayer_game():
+	return !get_tree().has_network_peer()
+
 puppet func register_player(id, name):
 	players[id] = name;
 	emit_signal("player_list_updated", players);
@@ -121,6 +138,7 @@ func clear_players(level: Node):
 
 func spawn_players(level: Node):
 	#Populate each player
+	clear_players(level)
 	var i = 0;
 	for p_id in players:
 		var player_node: Player = player_scene.instance();
@@ -135,12 +153,13 @@ func spawn_players(level: Node):
 		i+=1;
 	level.players_alive = i;
 
-sync func start_game():
+sync func start_game(difficulty: int = Game.EASY):
 	if game_started: 
 		return; #FIXME: This should never happen
 
 	#Load the main game scene
 	var arena: Node = load("res://scenes/stage.tscn").instance();
+	arena.game_difficulty = difficulty
 	#arena.connect("tree_exited", self, "stage_removed");
 	connect("update_latency", arena, "update_latency");
 	connect("mute", arena, "muted");
@@ -169,8 +188,33 @@ remote func process_rpc(tool_id: int, method_name: String, data: Array):
 		TOOLS.PING_UTIL:
 			PingUtil.callv(method_name, data);
 
+# Adjust some netcode functions to work smoothly in SP and Multiplayer
+func rpc_sp(caller: Node, method: String, args: Array = []):
+	if is_singleplayer_game():
+		caller.callv(method, args)
+	else:
+		caller.callv("rpc", [method] + args)
+
+func rpc_unreliable_sp(caller: Node, method: String, args: Array = []):
+	if is_singleplayer_game():
+		caller.callv(method, args)
+	else:
+		caller.callv("rpc_unreliable", [method] + args)
+
+func is_network_master_or_sp(caller: Node):
+	return is_singleplayer_game() or caller.is_network_master()
+
+func is_client() -> bool:
+	return get_tree().has_network_peer() and !get_tree().is_network_server()
+
+func is_client_connected() -> bool:
+	if !get_tree().has_network_peer() or get_tree().is_network_server():
+		return false;
+	return get_tree().get_network_peer().get_connection_status() == get_tree().get_network_peer().CONNECTION_CONNECTED
+
 # Global input
 func _input(event):
+
 	var is_just_pressed: bool = event.is_pressed() && !event.is_echo();
 	if Input.is_key_pressed(KEY_M) && is_just_pressed:
 		var audio_master_id: int = AudioServer.get_bus_index("Master");

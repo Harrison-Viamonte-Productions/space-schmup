@@ -1,5 +1,4 @@
 .import/
-*.import
 .export/
 *.zip
 *.rar

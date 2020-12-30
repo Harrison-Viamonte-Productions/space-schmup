@@ -39,7 +39,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Spaceship game MP"
-run/main_scene="res://scenes/Lobby.tscn"
+run/main_scene="res://scenes/MainMenu.tscn"
 config/icon="res://icon.png"
 
 [autoload]

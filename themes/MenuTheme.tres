@@ -1,0 +1,20 @@
+[gd_resource type="Theme" load_steps=6 format=2]
+
+[ext_resource path="res://fonts/PixelOperator-Bold.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://fonts/PixelOperator8-Bold.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="DynamicFont" id=1]
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 8
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 8
+font_data = ExtResource( 2 )
+
+[resource]
+Button/fonts/font = SubResource( 1 )
+Label/fonts/font = SubResource( 2 )
+TextEdit/fonts/font = SubResource( 3 )

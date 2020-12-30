@@ -19,7 +19,7 @@ func _ready():
 func _on_destroyedsnd_finished():
 	call_deferred("queue_free");
 
-func _process(delta):
+func _physics_process(delta):
 	if !is_destroyed:
 		position-=delta*(move_speed*move_mod+base_speed);
 		if position.x <= -100:

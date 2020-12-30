@@ -14,7 +14,6 @@ func _ready():
 	$FireSound.connect("finished", self, "_sound_finished");
 	$FireSound.play();
 	add_to_group("projectiles")
-	rotation = atan2(motion.y, motion.x)
 
 func _sound_finished():
 	is_playing_sound = false;

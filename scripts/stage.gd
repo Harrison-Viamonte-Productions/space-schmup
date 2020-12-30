@@ -12,7 +12,7 @@ extends Node2D
 const POINT_INCREMENT_SPEED = 25
 const POINT_PER_LIFE = 100;
 const START_LIVES = 3;
-const SCORE_LIMIT = 500;
+const SCORE_LIMIT = 1000;
 const START_LEVEL_SPEED = 30.0
 const ASTEROID_MAX_SCALE = 2.25
 
@@ -168,11 +168,13 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0, new_seed);
 			random_cell_pos = enemies_grid.get_world_pos_from_cell_centered(random_cell);
 			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
+			var enemy_tier: float = 1.0+rng.randf_range(0.0, 1.0)*float(difficulty-1.0)
 			spawnargs = {
 				idspawn = SPAWN_TYPE.ENEMY,
 				pos =  Vector2(Game.SCREEN_WIDTH + 64 + random_cell_pos.x, random_cell_pos.y),
-				fire_rate = clamp(rng.randf_range(1.0, 4.0)/float(difficulty), 0.2, 4.0),
-				speed = Vector2(40.0, 0.0) # Not random yet
+				fire_rate = clamp(rng.randf_range(3.0, 4.0)/enemy_tier, 0.2, 4.0),
+				speed = Vector2(40.0, 0.0), # Not random yet
+				health = int(enemy_tier*0.75+0.5)
 			};
 			if rng.randi_range(0, 100) % 100 < 25:
 				spawnargs.speed = Vector2(40.0, rng.randi_range(-10.0, 10.0));
@@ -199,26 +201,27 @@ func get_enemy_from_spawnargs(spawnargs: Dictionary) -> Node2D:
 		SPAWN_TYPE.ENEMY:
 			spawn_instance = enemy_scene.instance();
 			spawn_instance.set_name(str(enemies_count));
-			if Game.is_network_master_or_sp(self):
-				spawn_instance.position = spawnargs.pos;
-			else:
-				spawn_instance.position = spawnargs.pos - spawnargs.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
 			spawn_instance.fire_rate = rng.randf_range(0.5, 3.0);
-			spawn_instance.move_speed = spawnargs.speed;
+			#-1 being no path at all, just static movement
+			spawn_instance.current_path_to_follow = rng.randi_range(-1, spawn_instance.get_paths_count())
+			if spawn_instance.current_path_to_follow >= 0:
+				spawn_instance.ignore_base_velocity = rng.randi_range(0, 100) < 25
 		SPAWN_TYPE.ASTEROID:
 			spawn_instance = asteroid_scene.instance();
-			spawn_instance.set_name(str(enemies_count)); # For netcode in case we want to sync things in runtime with the asteroids
-			if Game.is_network_master_or_sp(self):
-				spawn_instance.position = spawnargs.pos;
-			else:
-				spawn_instance.position = spawnargs.pos - spawnargs.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 
-			spawn_instance.move_speed = spawnargs.speed;
-			spawn_instance.health = spawnargs.health;
 			spawn_instance.scale = Vector2(spawnargs.scale, spawnargs.scale);
 			spawn_instance.spawn_rotation = spawnargs.rotation;
+	# Common shared by all (both) enemy entities/nodes
+	spawn_instance.set_name(str(enemies_count)); # For netcode in case we want to sync things in runtime with the enemies
+	if Game.is_network_master_or_sp(self):
+		spawn_instance.position = spawnargs.pos;
+	else:
+		spawn_instance.position = spawnargs.pos - spawnargs.speed*clamp(Game.PingUtil.get_latency(), 0.0, Game.PingUtil.MAX_CLIENT_LATENCY); 	
+	spawn_instance.move_speed = spawnargs.speed;
+	spawn_instance.health = spawnargs.health;
+	spawn_instance.base_speed = Vector2(level_speed, 0)
 	connect("level_speed_changed", spawn_instance, "on_level_speed_changed" )
 	spawn_instance.connect("destroyed", self, "_on_player_score");
-	spawn_instance.base_speed = Vector2(level_speed, 0)
+	
 	return spawn_instance;
 
 func spawn_enemies(to_spawn: Array):

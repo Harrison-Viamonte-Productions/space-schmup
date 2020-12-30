@@ -20,15 +20,127 @@ height = 3.89766
 script = ExtResource( 3 )
 
 [node name="Sprite" type="AnimatedSprite" parent="."]
-modulate = Color( 0.819608, 0.227451, 0.227451, 1 )
+modulate = Color( 0.964706, 0.839216, 0.0196078, 1 )
 rotation = 3.14159
 scale = Vector2( 1, -1 )
 frames = SubResource( 1 )
 animation = "idle"
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]
+visible = false
 rotation = 1.5708
 shape = SubResource( 2 )
 
 [node name="shoot_timer" type="Timer" parent="."]
 wait_time = 2.0
+
+[node name="Paths" type="Node2D" parent="."]
+
+[node name="Path1" type="Node2D" parent="Paths"]
+visible = false
+
+[node name="1" type="Position2D" parent="Paths/Path1"]
+
+[node name="2" type="Position2D" parent="Paths/Path1"]
+position = Vector2( 0, -64 )
+
+[node name="3" type="Position2D" parent="Paths/Path1"]
+position = Vector2( 0, 64 )
+
+[node name="Path2" type="Node2D" parent="Paths"]
+visible = false
+
+[node name="1" type="Position2D" parent="Paths/Path2"]
+
+[node name="2" type="Position2D" parent="Paths/Path2"]
+position = Vector2( 56, -56 )
+
+[node name="3" type="Position2D" parent="Paths/Path2"]
+position = Vector2( 136, -96 )
+
+[node name="4" type="Position2D" parent="Paths/Path2"]
+position = Vector2( 192, 0 )
+
+[node name="5" type="Position2D" parent="Paths/Path2"]
+position = Vector2( 128, 64 )
+
+[node name="6" type="Position2D" parent="Paths/Path2"]
+position = Vector2( 32, 40 )
+
+[node name="Path3" type="Node2D" parent="Paths"]
+visible = false
+
+[node name="1" type="Position2D" parent="Paths/Path3"]
+
+[node name="2" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 24, 32 )
+
+[node name="3" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 56, 64 )
+
+[node name="4" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 96, 32 )
+
+[node name="5" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 128, -16 )
+
+[node name="6" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 160, -56 )
+
+[node name="7" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 200, -96 )
+
+[node name="8" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 200, -48 )
+
+[node name="9" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 200, 0 )
+
+[node name="10" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 200, 32 )
+
+[node name="11" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 200, 72 )
+
+[node name="12" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 152, 40 )
+
+[node name="13" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 104, 8 )
+
+[node name="14" type="Position2D" parent="Paths/Path3"]
+position = Vector2( 64, -24 )
+
+[node name="Path4" type="Node2D" parent="Paths"]
+
+[node name="1" type="Position2D" parent="Paths/Path4"]
+
+[node name="2" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 64, -64 )
+
+[node name="3" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 128, 64 )
+
+[node name="4" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 256, -64 )
+
+[node name="5" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 384, 64 )
+
+[node name="6" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 384, -64 )
+
+[node name="7" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 512, 64 )
+
+[node name="8" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 512, -64 )
+
+[node name="9" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 640, 64 )
+
+[node name="10" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 640, -64 )
+
+[node name="11" type="Position2D" parent="Paths/Path4"]
+position = Vector2( 768, 64 )

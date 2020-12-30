@@ -54,9 +54,10 @@ func _ready():
 	SnapshotTimer.connect("timeout", self, "_on_snapshot");
 	self.add_child(SnapshotTimer);
 	SnapshotTimer.start();
-	$background.scroll_speed = level_speed
+	$Background.scroll_speed = level_speed
 	update_lives(START_LIVES);
 	init_level_hud()
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func init_level_hud():
 	$ui/retry.hide();
@@ -155,6 +156,8 @@ func adjut_level_properties():
 
 sync func generate_enemies(current_score: int, new_seed: int):
 	rng.set_seed(new_seed); # GOLD <3
+	enemies_grid.set_random_seed(new_seed)
+	asteroids_grid.set_random_seed(new_seed)
 	adjut_level_properties()
 
 	var difficulty = round(calculate_difficulty(float(current_score), SCORE_LIMIT, max_difficulty))
@@ -165,7 +168,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 		var spawnargs: Dictionary;
 		var random_cell_pos: Vector2;
 		if rng.randi_range(0, 100) < 25:
-			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0, new_seed);
+			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0);
 			random_cell_pos = enemies_grid.get_world_pos_from_cell_centered(random_cell);
 			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
 			var enemy_tier: float = 1.0+rng.randf_range(0.0, 1.0)*float(difficulty-1.0)
@@ -179,7 +182,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			if rng.randi_range(0, 100) % 100 < 25:
 				spawnargs.speed = Vector2(40.0, rng.randi_range(-10.0, 10.0));
 		else:
-			random_cell_pos = asteroids_grid.get_world_pos_from_cell_centered(asteroids_grid.get_random_cell(new_seed));
+			random_cell_pos = asteroids_grid.get_world_pos_from_cell_centered(asteroids_grid.get_random_cell());
 			spawnargs = {
 				idspawn = SPAWN_TYPE.ASTEROID,
 				scale = rng.randf_range(1.0, scaleMax),
@@ -233,7 +236,7 @@ func spawn_enemies(to_spawn: Array):
 func update_level_speed(new_speed: float):
 	level_speed = new_speed
 	emit_signal("level_speed_changed", Vector2(new_speed, 0.0)) #FIXME: I keep using speed with vectors aaaaaa
-	$background.scroll_speed = new_speed
+	$Background.scroll_speed = new_speed
 
 sync func update_score(new_score):
 	score = new_score;
@@ -264,6 +267,9 @@ func _on_player_destroyed():
 		if Game.is_network_master_or_sp(self) and !game_finished: #Let the server handle this to avoid desync player lives between clients
 			Game.rpc_sp(self, "update_lives", [lives-1]);
 
+
+func _exit_tree():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 ##################
 # UI'specific

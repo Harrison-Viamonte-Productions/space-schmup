@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://sprites/background/back01.png" type="Texture" id=1]
+[ext_resource path="res://scripts/Background.gd" type="Script" id=2]
+[ext_resource path="res://Tiles/stars.tres" type="TileSet" id=3]
+
+[node name="Background" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="Back1" type="Sprite" parent="."]
+modulate = Color( 0, 0, 0, 1 )
+texture = ExtResource( 1 )
+centered = false
+
+[node name="TileLayer1" type="TileMap" parent="."]
+modulate = Color( 0.8, 0.607843, 0.784314, 0.537255 )
+tile_set = ExtResource( 3 )
+cell_size = Vector2( 8, 8 )
+format = 1
+
+[node name="TileLayer2" type="TileMap" parent="."]
+modulate = Color( 0.8, 0.607843, 0.784314, 0.196078 )
+tile_set = ExtResource( 3 )
+cell_size = Vector2( 8, 8 )
+format = 1
+
+[node name="TileLayer3" type="TileMap" parent="."]
+modulate = Color( 0.8, 0.607843, 0.784314, 0.0980392 )
+tile_set = ExtResource( 3 )
+cell_size = Vector2( 8, 8 )
+format = 1

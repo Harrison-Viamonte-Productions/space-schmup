@@ -96,19 +96,19 @@ func handle_input():
 	direction = Vector2.ZERO;
 	if not is_alive:
 		return
-	if Input.is_key_pressed(KEY_SPACE) && can_shoot:
+	if Input.is_action_pressed("fire") && can_shoot:
 		Game.rpc_unreliable_sp(self, "shoot_missile", [double_shoot]);
 		can_shoot = false;
 		tween.interpolate_callback(self, fire_rate, "enable_shoot");
 		tween.start();
 
-	if Input.is_key_pressed(KEY_UP):
+	if Input.is_action_pressed("ui_up"):
 		direction.y -= 1.0;
-	if Input.is_key_pressed(KEY_DOWN):
+	if Input.is_action_pressed("ui_down"):
 		direction.y += 1.0;
-	if Input.is_key_pressed(KEY_LEFT):
+	if Input.is_action_pressed("ui_left"):
 		direction.x -= 1.0;
-	if Input.is_key_pressed(KEY_RIGHT):
+	if Input.is_action_pressed("ui_right"):
 		direction.x += 1.0;
 
 sync func shoot_missile(is_double_shoot: bool):

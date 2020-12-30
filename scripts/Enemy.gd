@@ -2,7 +2,7 @@ extends Area2D
 
 const FOLLOW_PATH_SPEED: float = 50.0
 const WAIT_IN_PATH_TIME: float = 1.5
-const MIN_SHOOT_SPEED: float = 30.0
+const MIN_SHOOT_SPEED: float = 60.0
 const MAX_SHOOT_SPEED: float = 300.0
 
 var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn");
@@ -43,7 +43,7 @@ func _ready():
 	init_colors()
 
 func init_difficulty():
-	fire_shoot_speed = 32.0*float(health)
+	fire_shoot_speed = clamp(32.0*float(health), MIN_SHOOT_SPEED, MAX_SHOOT_SPEED)
 	if health > 6: #Nightmare of enemy...
 		double_shoot = true
 		fire_rate*=1.5 #Otherwise this is unfair as hell

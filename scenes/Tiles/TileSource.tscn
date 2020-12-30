@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://sprites/background/star_small.png" type="Texture" id=1]
+[ext_resource path="res://sprites/background/star_big.png" type="Texture" id=2]
+[ext_resource path="res://sprites/background/star_lump.png" type="Texture" id=3]
+
+[node name="TileSource" type="Node2D"]
+
+[node name="star_big" type="Sprite" parent="."]
+position = Vector2( 16, 8 )
+texture = ExtResource( 2 )
+
+[node name="star_lump" type="Sprite" parent="."]
+position = Vector2( 32, 8 )
+texture = ExtResource( 3 )
+
+[node name="star_small" type="Sprite" parent="."]
+position = Vector2( 48, 8 )
+texture = ExtResource( 1 )

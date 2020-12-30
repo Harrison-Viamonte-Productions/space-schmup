@@ -35,15 +35,20 @@ var cell_dirs: Dictionary = { # The keys are vectors 2D, which is awesome and ha
 var _grid: Array = [];
 var _cell_size: int = 0;
 var _dimensions_world: Vector2 = Vector2.ZERO; # Dimensions of the grid but in pixels
+var rng: RandomNumberGenerator = RandomNumberGenerator.new();
 
 #TODO for other project: Allow CuteGrid to be binded with a TileMap node
 
 # Square grids only by now (not infinite... :( )
 func _init(cell_size: int, dimensions_world: Vector2):
 	assert(cell_size > 0);
+	rng.randomize()
 	_cell_size = cell_size;
 	_dimensions_world = dimensions_world;
 	clear_grid();
+
+func set_random_seed(var new_seed: int):
+	rng.set_seed(new_seed)
 
 func get_dimension() -> Vector2:
 	return Vector2(int(floor(_dimensions_world.x/_cell_size)), int(floor(_dimensions_world.y/_cell_size)));
@@ -124,20 +129,33 @@ func set_dimension_world(dim_world: Vector2, clear: bool = false, fill_with = GR
 			elif y >= _grid[x].size():
 				_grid[x].append(fill_with);
 
-func get_random_cell(force_seed: int = -1) -> Vector2:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new();
+func get_random_cell() -> Vector2:
 	var dim: Vector2 = get_dimension();
-	if force_seed != -1:
-		rng.set_seed(force_seed);
 	return Vector2(rng.randi_range(0, dim.x-1), rng.randi_range(0, dim.y-1));
 
-func get_random_cell_filter(filter_val, force_seed: int = -1) -> Vector2:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new();
-	if force_seed != -1:
-		rng.set_seed(force_seed);
+func get_random_cell_filter(filter_val) -> Vector2:
 	var cells: Array = filter_cells_by_val(filter_val);
 	assert( cells.size() > 0 ); # Do we really want an assert here?
 	return cells[rng.randi_range(0, cells.size()-1)];
+
+func map_into_tilemap(map: TileMap, offset: Vector2 = Vector2.ZERO):
+	var grid_dimension: Vector2 = get_dimension();
+	for x in range(int(grid_dimension.x)):
+		for y in range(int(grid_dimension.y)):
+			map.set_cell(x+offset.x, y+offset.y, _grid[x][y])
+
+func fill_with_random_vals(vals: Array, percent: float = 1.0):
+	percent = clamp(percent, 0.0, 1.0)
+	clear_grid()
+	var cells: Array = filter_cells_by_val(GRID_NULL);
+	var to_place: int = int((cells.size()-1)*percent);
+	var i: int = 0
+	while (i < to_place):
+		var cell_index: int = rng.randi_range(0, cells.size()-1)
+		set_cellv(cells[cell_index], vals[rng.randi_range(0, vals.size()-1)])
+		cells.remove(cell_index)
+		i+=1
+
 ######################
 # To draw the grid, in a _draw method use for each line in lines, being lines what get_lines return
 #	draw_line(line[0], line[1], Color(0, 0, 255), 1);

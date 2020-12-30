@@ -30,6 +30,7 @@ shape = SubResource( 1 )
 
 [node name="sprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 2 )
+frame = 1
 playing = true
 
 [node name="respawn_timer" type="Label" parent="."]
@@ -64,3 +65,21 @@ uppercase = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="powerup" type="Label" parent="."]
+modulate = Color( 1, 1, 1, 0 )
+margin_left = -19.9471
+margin_top = -9.67344
+margin_right = 20.0529
+margin_bottom = 4.32651
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.435294, 1, 0.733333, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0.184314, 0.121569, 0.278431, 1 )
+align = 1
+uppercase = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="tween" type="Tween" parent="."]

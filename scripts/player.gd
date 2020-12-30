@@ -171,10 +171,18 @@ sync func _on_destroyed():
 		respawn_time = RESPAWN_DURATION
 		emit_signal("destroyed");
 
+func flash_message(text):
+	$powerup.text = text
+	$tween.interpolate_property($powerup, "rect_position:y", 0, -30, 0.7, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	$tween.interpolate_property($powerup, "modulate:a", 1, 0, 1.2, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	$tween.start()
+
 func on_score_changed(new_score):
-	if new_score >= DOUBLE_SHOOT_SCORE:
+	if new_score == DOUBLE_SHOOT_SCORE:
+		flash_message("SHOT UP")
 		double_shoot = true
 	if new_score % POINTS_TO_INCREASE_FIRE_RATE == 0:
+		flash_message("RATE UP")
 		fire_rate = clamp(fire_rate - INCREASE_FIRE_RATE_STEP, MIN_FIRE_RATE, MAX_FIRE_RATE)
 
 ###########################

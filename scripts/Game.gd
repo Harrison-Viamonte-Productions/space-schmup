@@ -145,7 +145,7 @@ func spawn_players(level: Node):
 		player_node.set_name(str(p_id));
 		player_node.nickname = players[p_id]
 		player_node.position = Vector2(50.0, 50.0+25.0*i);
-		player_node.modulate = colors_to_pick[i];
+		#player_node.modulate = colors_to_pick[i];
 		player_node.set_network_master(p_id);
 		level.get_node("Players").add_child(player_node);
 		player_node.connect("destroyed", level, "_on_player_destroyed");

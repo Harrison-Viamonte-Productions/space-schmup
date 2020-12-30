@@ -1,13 +1,13 @@
 [gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://sprites/asteroid1.png" type="Texture" id=1]
-[ext_resource path="res://sprites/asteroid2.png" type="Texture" id=2]
+[ext_resource path="res://sprites/asteroid/asteroid2.png" type="Texture" id=1]
+[ext_resource path="res://sprites/asteroid/asteroid1.png" type="Texture" id=2]
 [ext_resource path="res://scripts/Asteroid.gd" type="Script" id=3]
 [ext_resource path="res://sounds/asteroid_explosion1.ogg" type="AudioStream" id=4]
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 1 ), ExtResource( 2 ) ],
+"frames": [ ExtResource( 2 ), ExtResource( 1 ) ],
 "loop": true,
 "name": "default",
 "speed": 3.0
@@ -30,7 +30,7 @@ tracks/0/keys = {
 "times": PoolRealArray( 0, 0.05, 0.25 ),
 "transitions": PoolRealArray( 1, 1, 1 ),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 0.45098, 0.121569, 0.121569, 0.572549 ), Color( 1, 1, 1, 1 ) ]
+"values": [ Color( 0.886275, 0.839216, 0.733333, 1 ), Color( 0.886275, 0.839216, 0.733333, 0.572549 ), Color( 0.886275, 0.839216, 0.733333, 1 ) ]
 }
 
 [sub_resource type="Animation" id=4]
@@ -46,7 +46,7 @@ tracks/0/keys = {
 "times": PoolRealArray( 0 ),
 "transitions": PoolRealArray( 1 ),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ) ]
+"values": [ Color( 0.886275, 0.839216, 0.733333, 1 ) ]
 }
 
 [node name="asteroid" type="Area2D" groups=[
@@ -57,11 +57,12 @@ priority = 1.0
 script = ExtResource( 3 )
 
 [node name="sprite" type="AnimatedSprite" parent="."]
+modulate = Color( 0.886275, 0.839216, 0.733333, 1 )
 frames = SubResource( 1 )
-frame = 1
 playing = true
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]
+visible = false
 shape = SubResource( 2 )
 
 [node name="damage_blink_timer" type="Timer" parent="."]

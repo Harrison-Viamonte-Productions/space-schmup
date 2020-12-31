@@ -52,9 +52,16 @@ func show_lobby():
 	if Game.is_client():
 		DifficultyOption.set_disabled(true)
 		StartGameBtn.set_disabled(true)
+		rpc_id(Game.SERVER_NETID, "client_joined_lobby", get_tree().get_network_unique_id())
 	else:
 		DifficultyOption.set_disabled(false)
 		StartGameBtn.set_disabled(false)
+
+master func client_joined_lobby(client_id: int):
+	rpc_id(client_id, "receive_lobby_info", {difficulty = DifficultyOption.get_selected_id()})
+
+puppet func receive_lobby_info(info: Dictionary):
+	DifficultyOption.select(info.difficulty)
 
 func on_difficulty_selected(index: int):
 	Game.rpc_sp(self, "difficulty_set", [index])

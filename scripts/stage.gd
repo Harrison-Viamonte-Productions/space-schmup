@@ -55,6 +55,7 @@ func _ready():
 	self.add_child(SnapshotTimer);
 	SnapshotTimer.start();
 	$Background.scroll_speed = level_speed
+	connect("level_speed_changed", $Background, "_on_level_speed_changed")
 	update_lives(START_LIVES);
 	init_level_hud()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -236,7 +237,6 @@ func spawn_enemies(to_spawn: Array):
 func update_level_speed(new_speed: float):
 	level_speed = new_speed
 	emit_signal("level_speed_changed", Vector2(new_speed, 0.0)) #FIXME: I keep using speed with vectors aaaaaa
-	$Background.scroll_speed = new_speed
 
 sync func update_score(new_score):
 	score = new_score;

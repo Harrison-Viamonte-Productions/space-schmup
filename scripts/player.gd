@@ -188,9 +188,10 @@ func on_score_changed(new_score):
 		if not double_shoot:
 			flash_message("SHOT UP")
 		double_shoot = true
+
+	fire_rate = clamp(MAX_FIRE_RATE - INCREASE_FIRE_RATE_STEP*floor(new_score/POINTS_TO_INCREASE_FIRE_RATE), MIN_FIRE_RATE, MAX_FIRE_RATE)
 	if new_score % POINTS_TO_INCREASE_FIRE_RATE == 0:
 		flash_message("RATE UP")
-		fire_rate = clamp(fire_rate - INCREASE_FIRE_RATE_STEP, MIN_FIRE_RATE, MAX_FIRE_RATE)
 
 ###########################
 # Timers and tweens handlers

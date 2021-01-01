@@ -170,9 +170,13 @@ func destroy():
 	emit_signal("destroyed"); # Call it here and not in exit_tree...
 	call_deferred("queue_free");
 	var stage_node = get_parent();
+	if !is_instance_valid(stage_node):
+		print("[WARNING] invalid instance at enemy::destroy")
+		return
 	var explosion_instance = explosion_scene.instance();
 	explosion_instance.position = position;
-	stage_node.add_child(explosion_instance);
+	#stage_node.add_child(explosion_instance);
+	stage_node.call_deferred("add_child", explosion_instance)
 
 func _on_enemy_area_entered(area):
 	if (area is Projectile) and (!area.fired_by or typeof(area.fired_by) == TYPE_NIL or area.fired_by is Player):
@@ -192,6 +196,9 @@ func _on_shoot_timer_timeout():
 	if position.x > Game.SCREEN_WIDTH:
 		return;
 	var parent_node = get_parent();
+	if !is_instance_valid(parent_node):
+		print("[WARNING] invalid instance at enemy::_on_shoot_timer_timeout")
+		return
 	var min_speed = get_current_vel().x if (-get_current_vel().x >  base_speed.x) else -base_speed.x
 	var shoot_instance: Projectile = shoot_scene.instance();
 	var shoot_velocity: Vector2 = Vector2(-fire_shoot_speed+min_speed, 0.0);

@@ -232,7 +232,8 @@ func spawn_enemies(to_spawn: Array):
 	for spawnargs in to_spawn:
 		var spawn_instance: Node2D = get_enemy_from_spawnargs(spawnargs);
 		enemies_count+=1;
-		get_node("Enemies").add_child(spawn_instance);
+		#get_node("Enemies").add_child(spawn_instance);
+		get_node("Enemies").call_deferred("add_child", spawn_instance)
 
 func update_level_speed(new_speed: float):
 	level_speed = new_speed

@@ -38,6 +38,7 @@ func destroy():
 	var stage_node = get_parent();
 	if !is_instance_valid(stage_node):
 		print("[WARNING] Invalid instance at Asteroid::destroy")
+		return
 	var explosion_instance = explosion_scene.instance();
 	explosion_instance.position = position;
 	#stage_node.add_child(explosion_instance);

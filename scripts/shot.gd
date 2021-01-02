@@ -37,13 +37,20 @@ func destroy():
 	get_parent().add_child(particle_fx);
 
 func _on_shot_area_entered(area):
+	if !is_instance_valid(area):
+		print("Invalid instance at _on_shot_area_entered")
+		return;
 	if area.is_in_group("asteroid"):
 		pass;
 
 func _on_shot_body_entered(body):
+	if !is_instance_valid(body) or !is_instance_valid(fired_by):
+		print("Invalid instance at _on_shot_area_entered")
+		return;
 	if fired_by and typeof(fired_by) != TYPE_NIL and fired_by.is_in_group("players"):
 		return;
-	body.hit(); #Fix later
+	if body.has_method("hit"):
+		body.hit(); #Fix later
 
 func _exit_tree():
 	remove_from_group("projectiles")

@@ -116,6 +116,9 @@ func handle_input():
 
 sync func shoot_missile(is_double_shoot: bool):
 	var parent_node = get_parent();
+	if !is_instance_valid(parent_node):
+		print("[WARNING] invalid instance at player::shoot_missile")
+		return
 	var shot_instanceA: Projectile = shot_scene.instance();
 	if is_double_shoot:
 		var shot_instanceB: Projectile = shot_scene.instance();
@@ -125,13 +128,15 @@ sync func shoot_missile(is_double_shoot: bool):
 		shot_instanceA.position = position+Vector2(9, -5);
 		shot_instanceB.position = position+Vector2(9, 5);
 		shot_instanceB.set_network_master(self.get_network_master());
-		parent_node.add_child(shot_instanceB);
+		#parent_node.add_child(shot_instanceB);
+		parent_node.call_deferred("add_child", shot_instanceB)
 	else:
 		shot_instanceA.position = position+Vector2(9, 0);
 	shot_instanceA.motion = Vector2(500.0, 0.0);
 	shot_instanceA.fired_by = self;
 	shot_instanceA.set_network_master(self.get_network_master());
-	parent_node.add_child(shot_instanceA);
+	#parent_node.add_child(shot_instanceA);
+	parent_node.call_deferred("add_child", shot_instanceA)
 
 func move(delta):
 	move_and_slide(MOVE_SPEED*direction);
@@ -167,9 +172,13 @@ sync func _on_revived():
 sync func _on_destroyed():
 	if is_alive && spawn_protection_time <= 0.0:
 		var stage_node = get_parent();
-		var explosion_instance = explosion_scene.instance();
-		explosion_instance.position = position;
-		stage_node.add_child(explosion_instance);
+		if is_instance_valid(stage_node):
+			var explosion_instance = explosion_scene.instance();
+			explosion_instance.position = position;
+			#stage_node.add_child(explosion_instance);
+			stage_node.call_deferred("add_child", explosion_instance)
+		else:
+			print("[WARNING] invalid instance at Player::_on_destroyed")
 		is_alive = false;
 		$sprite.hide()
 		$hit_zone.set_deferred("disabled", true)
@@ -188,9 +197,10 @@ func on_score_changed(new_score):
 		if not double_shoot:
 			flash_message("SHOT UP")
 		double_shoot = true
+
+	fire_rate = clamp(MAX_FIRE_RATE - INCREASE_FIRE_RATE_STEP*floor(new_score/POINTS_TO_INCREASE_FIRE_RATE), MIN_FIRE_RATE, MAX_FIRE_RATE)
 	if new_score % POINTS_TO_INCREASE_FIRE_RATE == 0:
 		flash_message("RATE UP")
-		fire_rate = clamp(fire_rate - INCREASE_FIRE_RATE_STEP, MIN_FIRE_RATE, MAX_FIRE_RATE)
 
 ###########################
 # Timers and tweens handlers

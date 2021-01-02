@@ -190,12 +190,18 @@ remote func process_rpc(tool_id: int, method_name: String, data: Array):
 
 # Adjust some netcode functions to work smoothly in SP and Multiplayer
 func rpc_sp(caller: Node, method: String, args: Array = []):
+	if !is_instance_valid(caller):
+		print("[WARNING] Invalid instance at rpc_sp!")
+		return;
 	if is_singleplayer_game():
 		caller.callv(method, args)
 	else:
 		caller.callv("rpc", [method] + args)
 
 func rpc_unreliable_sp(caller: Node, method: String, args: Array = []):
+	if !is_instance_valid(caller):
+		print("[WARNING] Invalid instance at rpc_unreliable_sp!")
+		return;
 	if is_singleplayer_game():
 		caller.callv(method, args)
 	else:

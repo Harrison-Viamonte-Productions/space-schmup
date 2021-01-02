@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://sprites/asteroid/asteroid1.png" type="Texture" id=1]
+[ext_resource path="res://sprites/asteroid/asteroid2.png" type="Texture" id=2]
+[ext_resource path="res://scripts/ForegroundAsteroid.gd" type="Script" id=3]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 1 ), ExtResource( 2 ) ],
+"loop": true,
+"name": "idle",
+"speed": 3.0
+} ]
+
+[node name="ForegroundAsteroid" type="AnimatedSprite"]
+modulate = Color( 0.207843, 0.207843, 0.207843, 0.392157 )
+frames = SubResource( 1 )
+animation = "idle"
+playing = true
+script = ExtResource( 3 )

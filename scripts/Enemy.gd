@@ -206,7 +206,8 @@ func _on_shoot_timer_timeout():
 	if double_shoot:
 		var shoot_instanceB: Projectile = shoot_scene.instance();
 		shoot_instanceB.motion = shoot_velocity
-		shoot_instanceB.modulate = Color(0.75, 0.25, 0.25); 
+		#f70000
+		shoot_instanceB.modulate = Color("ffdd00"); 
 		shoot_instanceB.fired_by = self;
 		shoot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
 		shoot_instance.position = position+Vector2(-9, -5);
@@ -215,7 +216,7 @@ func _on_shoot_timer_timeout():
 	else:
 		shoot_instance.position = position+Vector2(-9, 0);
 
-	shoot_instance.modulate = Color(0.75, 0.25, 0.25); 
+	shoot_instance.modulate = Color("ffdd00"); 
 	shoot_instance.fired_by = self;
 	shoot_instance.motion = shoot_velocity
 	parent_node.call_deferred("add_child", shoot_instance);

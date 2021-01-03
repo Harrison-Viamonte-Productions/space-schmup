@@ -15,6 +15,15 @@ func _ready():
 	add_to_group("enemies");
 	$destroyed_sound.connect("finished", self, "_on_destroyedsnd_finished");
 	$sprite.rotation_degrees = spawn_rotation;
+	if self.scale.x <= 1.10:
+		$sprite.play("small")
+		$sprite.scale = Vector2(1.0, 1.0)
+	elif self.scale.x <= 1.6:
+		$sprite.play("medium")
+		$sprite.scale = Vector2(0.5, 0.5)
+	else:
+		$sprite.play("big")
+		$sprite.scale = Vector2(0.25, 0.25)
 
 func _on_destroyedsnd_finished():
 	call_deferred("queue_free");

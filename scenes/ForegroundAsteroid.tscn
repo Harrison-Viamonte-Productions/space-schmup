@@ -16,5 +16,6 @@ animations = [ {
 modulate = Color( 0.207843, 0.207843, 0.207843, 0.392157 )
 frames = SubResource( 1 )
 animation = "idle"
+frame = 1
 playing = true
 script = ExtResource( 3 )

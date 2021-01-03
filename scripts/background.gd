@@ -20,12 +20,12 @@ func _ready():
 	for i in STAR_TILES:
 		tiles_indexes.append(i)
 		
-	tiles_parallax.append({map = $stars1, pos = Vector2.ZERO, speed = 1.25})
-	tiles_parallax.append({map = $stars1_anim, pos = Vector2.ZERO, speed = 1.15})
-	tiles_parallax.append({map = $stars2, pos = Vector2.ZERO, speed = 0.9})
-	tiles_parallax.append({map = $stars2_anim, pos = Vector2.ZERO, speed = 0.8})
-	tiles_parallax.append({map = $stars3, pos = Vector2.ZERO, speed = 0.65})
-	tiles_parallax.append({map = $stars3_anim, pos = Vector2.ZERO, speed = 0.5})
+	tiles_parallax.append({map = $stars1, pos = Vector2.ZERO, speed = 0.3})
+	tiles_parallax.append({map = $stars1_anim, pos = Vector2.ZERO, speed = 0.25})
+	tiles_parallax.append({map = $stars2, pos = Vector2.ZERO, speed = 0.2})
+	tiles_parallax.append({map = $stars2_anim, pos = Vector2.ZERO, speed = 0.15})
+	tiles_parallax.append({map = $stars3, pos = Vector2.ZERO, speed = 0.1})
+	tiles_parallax.append({map = $stars3_anim, pos = Vector2.ZERO, speed = 0.05})
 	
 	stars_grid = CuteGrid.new(tiles_parallax[0].map.get_cell_size().x, Vector2(Game.SCREEN_WIDTH*2, Game.SCREEN_HEIGHT))
 	

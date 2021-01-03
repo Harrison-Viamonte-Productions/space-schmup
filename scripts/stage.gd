@@ -210,6 +210,7 @@ func get_enemy_from_spawnargs(spawnargs: Dictionary) -> Node2D:
 			spawn_instance.current_path_to_follow = rng.randi_range(-1, spawn_instance.get_paths_count())
 			if spawn_instance.current_path_to_follow >= 0:
 				spawn_instance.ignore_base_velocity = rng.randi_range(0, 100) < 25
+			spawn_instance.rng.set_seed(rng.get_seed())
 		SPAWN_TYPE.ASTEROID:
 			spawn_instance = asteroid_scene.instance();
 			spawn_instance.scale = Vector2(spawnargs.scale, spawnargs.scale);

@@ -4,6 +4,10 @@ const FOLLOW_PATH_SPEED: float = 50.0
 const WAIT_IN_PATH_TIME: float = 1.5
 const MIN_SHOOT_SPEED: float = 60.0
 const MAX_SHOOT_SPEED: float = 300.0
+const ACCEL_SPEED: float = 70.0
+const MIN_SLIDE_SPEED: float = 50.0
+const MAX_SLIDE_SPEED: float = 80.0
+const SLID_DESACCEL: float = 45.0
 
 var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn");
 var shoot_scene: PackedScene = preload("res://scenes/shot.tscn");
@@ -11,6 +15,7 @@ export var move_speed: Vector2 = Vector2(70.0, 0.0);
 export var health: int = 3;
 export var fire_rate: float = 1.0;
 
+var slide_velocity: Vector2 = Vector2.ZERO
 var fire_shoot_speed: float = 50.0
 var is_on_viewport = false
 var is_destroyed = false;
@@ -29,6 +34,8 @@ var current_path_following: Dictionary = {
 	direction = Vector2.ZERO
 }
 
+var rng: RandomNumberGenerator = RandomNumberGenerator.new();
+
 signal destroyed;
 
 func _ready():
@@ -36,12 +43,35 @@ func _ready():
 		
 	self.connect("area_entered", self, "_on_enemy_area_entered");
 	self.connect("body_entered", self, "_on_enemy_body_entered");
+	$slide_timer.connect("timeout", self, "_on_slide_timeout")
 	$shoot_timer.connect("timeout", self, "_on_shoot_timer_timeout");
 	$shoot_timer.start(fire_rate);
+	$slide_timer.start(1.0)
+	$Sprite.play("idle")
 	add_to_group("enemies");
 	init_paths()
 	init_colors()
 
+func _on_slide_timeout():
+	if (global_position.y < 8 or global_position.y > (Game.SCREEN_HEIGHT-8)):
+		return # avoid undesired bug while a shipt was already out of screen
+	if rng.randi()%100 <= 15:
+		var new_slide_speed: int = rng.randf_range(MIN_SLIDE_SPEED, MAX_SLIDE_SPEED)
+		if rng.randi()%100 <= 50:
+			slide_velocity = Vector2(0.0, new_slide_speed)
+		else:
+			slide_velocity = Vector2(0.0, -new_slide_speed)
+
+func update_slide_vel(delta):
+	if slide_velocity.x > 0.0:
+		slide_velocity.x = clamp(slide_velocity.x - SLID_DESACCEL*delta, 0.0, slide_velocity.x)
+	elif slide_velocity.x < 0.0:
+		slide_velocity.x = clamp(slide_velocity.x + SLID_DESACCEL*delta, slide_velocity.x, 0.0)
+	if slide_velocity.y > 0.0:
+		slide_velocity.y = clamp(slide_velocity.y - SLID_DESACCEL*delta, 0.0, slide_velocity.y)
+	elif slide_velocity.y < 0.0:
+		slide_velocity.y = clamp(slide_velocity.y + SLID_DESACCEL*delta, slide_velocity.y, 0.0)
+		
 func init_difficulty():
 	fire_shoot_speed = clamp(32.0*float(health), MIN_SHOOT_SPEED, MAX_SHOOT_SPEED)
 	if health > 6: #Nightmare of enemy...
@@ -51,7 +81,7 @@ func init_difficulty():
 func init_colors():
 	# To help the player know how hard is the enemy that is facing
 	if health <= 2:
-		$Sprite.modulate = Color("#5fe0ee")
+		$Sprite.modulate = Color("#ffffff")
 	elif health > 2 and health <=4:
 		$Sprite.modulate = Color("#ca7593")
 	elif health > 4 and health <=6:
@@ -135,6 +165,7 @@ func get_current_vel() -> Vector2:
 	if current_path_to_follow >= 0 and is_on_viewport:
 		velocity+=current_path_following.direction*FOLLOW_PATH_SPEED
 	
+	velocity+= slide_velocity
 	return velocity
 
 func modulate_sprite(new_color: Color) -> void:
@@ -147,8 +178,9 @@ func _physics_process(delta):
 		else:
 			is_on_viewport = false
 		
+		update_slide_vel(delta)
 		move(delta)
-		
+		update_anim()
 		if position.x <= -100:
 			call_deferred("queue_free");
 
@@ -158,10 +190,21 @@ func move(delta):
 	var new_position: Vector2 = position
 	update_and_get_path_follow_motion(current_path_to_follow, delta)
 	new_position+=get_current_vel()*delta
-	if current_path_to_follow >= 0  and (new_position.y < 8 or new_position.y > (Game.SCREEN_HEIGHT-8)):
-		move_to_next_path_point(current_path_to_follow)
-		new_position.y = clamp(new_position.y, 8, Game.SCREEN_HEIGHT-8)
+	if (new_position.y < 8 or new_position.y > (Game.SCREEN_HEIGHT-8)):
+		if current_path_to_follow >= 0:
+			move_to_next_path_point(current_path_to_follow)
+			new_position.y = clamp(new_position.y, 8, Game.SCREEN_HEIGHT-8)
+		
+		if slide_velocity.length_squared() > 1.0:
+			new_position.y = clamp(new_position.y, 8, Game.SCREEN_HEIGHT-8)
+			slide_velocity = -slide_velocity
 	position = new_position
+
+func update_anim():
+	if (get_current_vel()+base_speed).length_squared() > pow(ACCEL_SPEED, 2.0): #Squared for performance
+		$Sprite.play("accelerate")
+	else:
+		$Sprite.play("idle")
 
 func destroy():
 	if is_destroyed:

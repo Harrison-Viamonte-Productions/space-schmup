@@ -9,10 +9,11 @@ onready var ExitGameBtn = $MenuButtons/VBoxContainer/Exit
 onready var MultiplayerBtn = $MenuButtons/VBoxContainer/Multiplayer
 onready var BackToMenuBtn = $Back
 onready var PlayOfflineBtn = $MenuButtons/VBoxContainer/PlayOffline
-onready var StartGameBtn = $Lobby/panel/MarginContainer/vbox/HBoxContainer/StartGame
+onready var StartGameBtn = $Lobby/panel/MarginContainer/vbox/StartGame
 onready var DifficultyOption: OptionButton = $Lobby/panel/MarginContainer/vbox/HBoxContainer/Difficulty
 onready var DifficultyOptionSP: OptionButton = $SPGame/VBoxContainer/HBoxContainer/DifficultySP
 onready var StartGameSPBtn = $SPGame/VBoxContainer/StartSP
+onready var SharedLivesCheckBox: CheckBox = $Lobby/panel/MarginContainer/vbox/HBoxContainer/SharedLives
 
 func _ready():
 	
@@ -25,6 +26,7 @@ func _ready():
 	StartGameBtn.connect("pressed",self, "start_mp_game")
 	StartGameSPBtn.connect("pressed", self, "start_offline_game")
 	DifficultyOption.connect("item_selected", self, "on_difficulty_selected")
+	SharedLivesCheckBox.connect("pressed", self, "on_shared_lives_changed")
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
@@ -49,25 +51,37 @@ func show_lobby():
 	$Multiplayer.hide()
 	$SPGame.hide()
 	BackToMenuBtn.show()
+	SharedLivesCheckBox.set_pressed(Game.sv_shared_lives)
 	if Game.is_client():
+		SharedLivesCheckBox.set_disabled(true)
 		DifficultyOption.set_disabled(true)
 		StartGameBtn.set_disabled(true)
 		rpc_id(Game.SERVER_NETID, "client_joined_lobby", get_tree().get_network_unique_id())
 	else:
 		DifficultyOption.set_disabled(false)
 		StartGameBtn.set_disabled(false)
+		SharedLivesCheckBox.set_disabled(false)
 
 master func client_joined_lobby(client_id: int):
-	rpc_id(client_id, "receive_lobby_info", {difficulty = DifficultyOption.get_selected_id()})
+	rpc_id(client_id, "receive_lobby_info", {difficulty = DifficultyOption.get_selected_id(), shared_lives = SharedLivesCheckBox.is_pressed()})
 
 puppet func receive_lobby_info(info: Dictionary):
 	DifficultyOption.select(info.difficulty)
+	SharedLivesCheckBox.set_pressed(info.shared_lives)
+	Game.sv_shared_lives = info.shared_lives
 
 func on_difficulty_selected(index: int):
 	Game.rpc_sp(self, "difficulty_set", [index])
 
+func on_shared_lives_changed():
+	Game.rpc_sp(self, "shared_lives_set", [SharedLivesCheckBox.is_pressed()])
+
 sync func difficulty_set(index: int):
 	DifficultyOption.select(index)
+
+sync func shared_lives_set(new_val: bool):
+	Game.sv_shared_lives = new_val
+	SharedLivesCheckBox.set_pressed(new_val)
 
 func show_multiplayer_menu():
 	$Multiplayer.show()

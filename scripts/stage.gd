@@ -42,6 +42,7 @@ enum SPAWN_TYPE {
 };
 
 signal level_speed_changed(new_speed)
+signal extra_life
 
 func _ready():
 	# Let's implement the snapshot code in the stage and not in the singleton, because I am using Godot way of doing netcode
@@ -92,15 +93,18 @@ func clear_stage():
 	max_level_speed = 0
 	rng.randomize();
 
+sync func game_over():
+	Game.clear_players(self)
+	is_game_over = true
+	if !Game.is_network_master_or_sp(self):
+		$ui/retry.text = "Waiting for server to restart..."
+	$ui/retry.show()
+
 sync func update_lives(new_lives: int):
 	lives = new_lives;
 	$ui/lives.text = "Lives: " + str(lives)
-	if lives <= 0:
-		Game.clear_players(self)
-		is_game_over = true
-		if !Game.is_network_master_or_sp(self):
-			$ui/retry.text = "Waiting for server to restart..."
-		$ui/retry.show()
+	if lives <= 0 and (Game.sv_shared_lives or Game.is_singleplayer_game()):
+		game_over()
 
 func game_was_finished():
 	game_finished = true
@@ -247,6 +251,7 @@ sync func update_score(new_score):
 		game_was_finished()
 	if score % POINT_PER_LIFE == 0:
 		update_lives(lives+1)
+		emit_signal("extra_life")
 	#if score % POINT_INCREMENT_SPEED == 0:
 	update_level_speed(calculate_level_speed(score, SCORE_LIMIT, START_LEVEL_SPEED, max_level_speed))
 
@@ -260,15 +265,29 @@ func _on_player_score():
 	if Game.is_network_master_or_sp(self):
 		Game.rpc_sp(self, "update_score", [score]);
 
-func _on_player_revived():
+func _on_player_revived(player):
+	if !is_instance_valid(player):
+		print("[FATAL ERROR] invalid instance at stage::_on_player_revived")
 	players_alive+=1;
 
-func _on_player_destroyed():
+func _on_player_destroyed(player, player_lives):
+	if !is_instance_valid(player):
+		print("[FATAL ERROR] invalid instance at stage::_on_player_destroyed")
+	if Game.sv_shared_lives or Game.is_singleplayer_game():
+		players_alive-=1;
+		if players_alive <= 0:
+			if Game.is_network_master_or_sp(self) and !game_finished: #Let the server handle this to avoid desync player lives between clients
+				Game.rpc_sp(self, "update_lives", [lives-1]);
+	elif Game.is_network_master_or_sp(player):
+		update_lives(player_lives) #without rpc this is not net-sync, and that's the idea
+
+func _on_player_out_of_lives(player):
+	if !is_instance_valid(player):
+		print("[FATAL ERROR] invalid instance at stage::_on_player_out_of_lives")
 	players_alive-=1;
 	if players_alive <= 0:
-		if Game.is_network_master_or_sp(self) and !game_finished: #Let the server handle this to avoid desync player lives between clients
-			Game.rpc_sp(self, "update_lives", [lives-1]);
-
+		if Game.is_network_master_or_sp(self) and !game_finished:
+			Game.rpc_sp(self, "game_over");
 
 func _exit_tree():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

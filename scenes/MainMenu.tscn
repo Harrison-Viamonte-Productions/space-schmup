@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://fonts/PixelOperator8.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://fonts/hour5.ttf" type="DynamicFontData" id=2]
 [ext_resource path="res://scripts/Lobby.gd" type="Script" id=3]
 [ext_resource path="res://themes/MenuTheme.tres" type="Theme" id=4]
 [ext_resource path="res://sprites/background.png" type="Texture" id=5]
+[ext_resource path="res://fonts/PixelOperator8-Bold.ttf" type="DynamicFontData" id=6]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.737255, 0.392157, 0.878431, 0.196078 )
@@ -13,6 +14,10 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color( 0.956863, 0.2, 0.2, 0.282353 )
+
+[sub_resource type="DynamicFont" id=4]
+size = 11
+font_data = ExtResource( 6 )
 
 [sub_resource type="DynamicFont" id=2]
 size = 48
@@ -40,6 +45,7 @@ __meta__ = {
 }
 
 [node name="MenuButtons" type="MarginContainer" parent="."]
+visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -120,14 +126,13 @@ margin_bottom = 54.0
 text = "START GAME"
 
 [node name="Lobby" type="MarginContainer" parent="."]
-visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-margin_left = -92.5
-margin_top = -22.0
-margin_right = 92.5
+margin_left = -92.0
+margin_top = -134.0
+margin_right = 97.0
 grow_vertical = 0
 theme = ExtResource( 4 )
 custom_constants/margin_bottom = 10
@@ -136,16 +141,16 @@ __meta__ = {
 }
 
 [node name="panel" type="PanelContainer" parent="Lobby"]
-margin_right = 185.0
-margin_bottom = 100.0
+margin_right = 189.0
+margin_bottom = 124.0
 rect_min_size = Vector2( 0, 100 )
 custom_styles/panel = SubResource( 1 )
 
 [node name="MarginContainer" type="MarginContainer" parent="Lobby/panel"]
 margin_left = 2.0
 margin_top = 2.0
-margin_right = 183.0
-margin_bottom = 101.0
+margin_right = 187.0
+margin_bottom = 122.0
 custom_constants/margin_right = 5
 custom_constants/margin_top = 5
 custom_constants/margin_left = 5
@@ -154,23 +159,23 @@ custom_constants/margin_bottom = 5
 [node name="vbox" type="VBoxContainer" parent="Lobby/panel/MarginContainer"]
 margin_left = 5.0
 margin_top = 5.0
-margin_right = 176.0
-margin_bottom = 94.0
+margin_right = 180.0
+margin_bottom = 115.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_constants/separation = 7
+custom_constants/separation = 5
 
 [node name="Title" type="Label" parent="Lobby/panel/MarginContainer/vbox"]
-margin_right = 171.0
+margin_right = 175.0
 margin_bottom = 8.0
 custom_colors/font_color = Color( 0.721569, 0.690196, 0.886275, 1 )
 custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
 text = "Player list:"
 
 [node name="Players" type="Label" parent="Lobby/panel/MarginContainer/vbox"]
-margin_top = 15.0
-margin_right = 171.0
-margin_bottom = 60.0
+margin_top = 13.0
+margin_right = 175.0
+margin_bottom = 58.0
 rect_min_size = Vector2( 0, 45 )
 text = "Player 1
 Player 2
@@ -178,19 +183,27 @@ Player 3
 Player 4"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Lobby/panel/MarginContainer/vbox"]
-margin_top = 67.0
-margin_right = 171.0
-margin_bottom = 89.0
+margin_top = 63.0
+margin_right = 175.0
+margin_bottom = 87.0
 
 [node name="Difficulty" type="OptionButton" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
 margin_right = 61.0
-margin_bottom = 22.0
+margin_bottom = 24.0
 text = "Easy"
 
-[node name="StartGame" type="Button" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
+[node name="SharedLives" type="CheckBox" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
 margin_left = 65.0
-margin_right = 117.0
-margin_bottom = 22.0
+margin_right = 175.0
+margin_bottom = 24.0
+text = "Share Lives"
+
+[node name="StartGame" type="Button" parent="Lobby/panel/MarginContainer/vbox"]
+margin_top = 92.0
+margin_right = 175.0
+margin_bottom = 110.0
+rect_min_size = Vector2( 0, 18 )
+custom_fonts/font = SubResource( 4 )
 text = "START"
 
 [node name="Multiplayer" type="VBoxContainer" parent="."]

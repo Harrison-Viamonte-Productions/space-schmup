@@ -29,6 +29,9 @@ var player_nickname: String = "Player";
 var players = {};
 var PingUtil: LatencyCounter = LatencyCounter.new(self, "update_latency", TOOLS.PING_UTIL); # Tool.
 
+#CVARS
+var sv_shared_lives: bool = false
+
 var skills: Array = [
 	'Easy',
 	'Medium',
@@ -141,17 +144,19 @@ func spawn_players(level: Node):
 	clear_players(level)
 	var i = 0;
 	for p_id in players:
-		var player_node: Player = player_scene.instance();
-		player_node.set_name(str(p_id));
+		var player_node: Player = player_scene.instance()
+		player_node.set_name(str(p_id))
 		player_node.nickname = players[p_id]
-		player_node.position = Vector2(50.0, 50.0+25.0*i);
-		#player_node.modulate = colors_to_pick[i];
-		player_node.set_network_master(p_id);
-		level.get_node("Players").add_child(player_node);
-		player_node.connect("destroyed", level, "_on_player_destroyed");
-		player_node.connect("revived", level, "_on_player_revived");
-		i+=1;
-	level.players_alive = i;
+		player_node.position = Vector2(50.0, 50.0+25.0*i)
+		#player_node.modulate = colors_to_pick[i]
+		player_node.set_network_master(p_id)
+		level.get_node("Players").add_child(player_node)
+		player_node.connect("destroyed", level, "_on_player_destroyed")
+		player_node.connect("revived", level, "_on_player_revived")
+		player_node.connect("out_of_lives", level, "_on_player_out_of_lives")
+		level.connect("extra_life", player_node, "_on_extra_life")
+		i+=1
+	level.players_alive = i
 
 sync func start_game(difficulty: int = Game.EASY):
 	if game_started: 

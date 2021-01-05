@@ -1,36 +1,38 @@
 class_name Player
 extends KinematicBody2D
 
-const SPACE_SIZE = 20.0;
-const MOVE_SPEED = 100.0;
-const CLIENT_FOLLOW_SPEED = 8.0;
-const RESPAWN_DURATION = 6;
-const SPAWN_PROTECTION_DURATION = 3.0;
+const SPACE_SIZE = 20.0
+const MOVE_SPEED = 100.0
+const CLIENT_FOLLOW_SPEED = 8.0
+const RESPAWN_DURATION = 6
+const SPAWN_PROTECTION_DURATION = 3.0
 const SPAWN_PROTECTION_TIMEFX = 0.075; # Secs
 const MIN_FIRE_RATE = 0.125
 const MAX_FIRE_RATE = 0.3
 const POINTS_TO_INCREASE_FIRE_RATE = 75
 const INCREASE_FIRE_RATE_STEP = 0.025
-var fire_rate = MAX_FIRE_RATE; # secs. idea: maybe this can be dinamic?
+var fire_rate = MAX_FIRE_RATE # secs. idea: maybe this can be dinamic?
 const DOUBLE_SHOOT_SCORE = 50
 
-signal destroyed;
-signal revived;
+signal destroyed(player, lives)
+signal revived(player)
+signal out_of_lives(player)
 
-var is_alive = true;
-var can_shoot = true;
-var double_shoot = false;
+var is_alive = true
+var can_shoot = true
+var double_shoot = false
 var nickname = "player"
 
-var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn");
-var shot_scene: PackedScene = preload("res://scenes/shot.tscn");
-var snapshotData: Dictionary = {pos = Vector2()};
-var spawn_protection_time: float = SPAWN_PROTECTION_DURATION;
-var respawn_time: float = 0;
-var direction: Vector2 = Vector2.ZERO;
+var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn")
+var shot_scene: PackedScene = preload("res://scenes/shot.tscn")
+var snapshotData: Dictionary = {pos = Vector2()}
+var spawn_protection_time: float = SPAWN_PROTECTION_DURATION
+var respawn_time: float = 0
+var direction: Vector2 = Vector2.ZERO
+var lives: int = 3 # lives at beggining, used when sv_shared_lives and the game it's mp is false
 
-onready var SpawnProtectionFxTimer: Timer = Timer.new();
-onready var tween: Tween = Tween.new();
+onready var SpawnProtectionFxTimer: Timer = Timer.new()
+onready var tween: Tween = Tween.new()
 
 func _ready():
 	#Initialize respawn fx timer
@@ -58,12 +60,13 @@ func enable_spawn_protection():
 func _physics_process(delta):
 	if spawn_protection_time > 0.0:
 		spawn_protection_time-=delta;
-	if not is_alive:
+	if !is_alive and (Game.sv_shared_lives or lives > 0):
 		respawn_time-=delta;
 		$respawn_timer.text = str(int(respawn_time));
 		if respawn_time <= 0 and Game.is_network_master_or_sp(self):
 			Game.rpc_sp(self, "_on_revived")
 			respawn_time = 0
+
 	if Game.is_network_master_or_sp(self):
 		think(delta);
 	else:
@@ -147,7 +150,7 @@ func adjust_position_to_bounds():
 
 func hit():
 	if Game.is_network_master_or_sp(self) && is_alive:
-		Game.rpc_sp(self, "_on_destroyed");
+		Game.rpc_sp(self, "_on_destroyed", [lives]);
 
 func _exit_tree():
 	remove_from_group("players");
@@ -159,18 +162,28 @@ func _exit_tree():
 
 # Player signals
 
+func _on_extra_life():
+	if !Game.sv_shared_lives:
+		lives+=1
+		if lives == 1:
+			respawn_time = 0
+			emit_signal("revived", self);
+
 sync func _on_revived():
 	if not is_alive:
 		is_alive = true
 		$sprite.show()
 		$hit_zone.set_deferred("disabled", false)
 		$respawn_timer.hide()
+		$name.show()
 		respawn_time = 0
 		enable_spawn_protection();
-		emit_signal("revived");
+		if Game.sv_shared_lives or Game.is_singleplayer_game():
+			emit_signal("revived", self);
 
-sync func _on_destroyed():
+sync func _on_destroyed(new_lives: int):
 	if is_alive && spawn_protection_time <= 0.0:
+		lives=new_lives-1
 		var stage_node = get_parent();
 		if is_instance_valid(stage_node):
 			var explosion_instance = explosion_scene.instance();
@@ -182,9 +195,13 @@ sync func _on_destroyed():
 		is_alive = false;
 		$sprite.hide()
 		$hit_zone.set_deferred("disabled", true)
-		$respawn_timer.show()
-		respawn_time = RESPAWN_DURATION
-		emit_signal("destroyed");
+		if Game.sv_shared_lives or lives > 0:
+			$respawn_timer.show()
+			respawn_time = RESPAWN_DURATION
+		else:
+			$name.hide()
+			emit_signal("out_of_lives", self);
+		emit_signal("destroyed", self, lives);
 
 func flash_message(text):
 	$powerup.text = text

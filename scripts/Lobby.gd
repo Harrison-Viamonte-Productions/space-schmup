@@ -14,6 +14,7 @@ onready var DifficultyOption: OptionButton = $Lobby/panel/MarginContainer/vbox/H
 onready var DifficultyOptionSP: OptionButton = $SPGame/VBoxContainer/HBoxContainer/DifficultySP
 onready var StartGameSPBtn = $SPGame/VBoxContainer/StartSP
 onready var SharedLivesCheckBox: CheckBox = $Lobby/panel/MarginContainer/vbox/HBoxContainer/SharedLives
+onready var CreditsBtn: TextureButton = $CenterContainer/AboutUs
 
 func _ready():
 	
@@ -27,6 +28,7 @@ func _ready():
 	StartGameSPBtn.connect("pressed", self, "start_offline_game")
 	DifficultyOption.connect("item_selected", self, "on_difficulty_selected")
 	SharedLivesCheckBox.connect("pressed", self, "on_shared_lives_changed")
+	CreditsBtn.connect("pressed", self, "show_credits")
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
@@ -92,12 +94,21 @@ func go_back():
 	$Multiplayer.hide()
 	$MenuButtons.show()
 	$Lobby.hide()
+	$Credits.hide()
 	$SPGame.hide()
 	BackToMenuBtn.hide()
 	HostServerBtn.disabled = false;
 	ConnectServerBtn.disabled = false;
 	Game._stop_game("Game stopped")
 
+func show_credits():
+	$Credits.show()
+	$Multiplayer.hide()
+	$SPGame.hide()
+	$Lobby.hide()
+	$MenuButtons.hide()
+	BackToMenuBtn.show()
+	
 func exit_game():
 	get_tree().quit()
 

@@ -59,7 +59,7 @@ func _ready():
 	connect("level_speed_changed", $Background, "_on_level_speed_changed")
 	update_lives(START_LIVES);
 	init_level_hud()
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 
 func init_level_hud():
 	$ui/retry.hide();

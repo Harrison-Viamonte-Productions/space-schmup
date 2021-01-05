@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://fonts/PixelOperator8.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://fonts/hour5.ttf" type="DynamicFontData" id=2]
@@ -6,6 +6,8 @@
 [ext_resource path="res://themes/MenuTheme.tres" type="Theme" id=4]
 [ext_resource path="res://sprites/background.png" type="Texture" id=5]
 [ext_resource path="res://fonts/PixelOperator8-Bold.ttf" type="DynamicFontData" id=6]
+[ext_resource path="res://sprites/ui/about_us_hover.png" type="Texture" id=7]
+[ext_resource path="res://sprites/ui/about_us_normal.png" type="Texture" id=8]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.737255, 0.392157, 0.878431, 0.196078 )
@@ -15,15 +17,15 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color( 0.956863, 0.2, 0.2, 0.282353 )
 
-[sub_resource type="DynamicFont" id=4]
+[sub_resource type="DynamicFont" id=2]
 size = 11
 font_data = ExtResource( 6 )
 
-[sub_resource type="DynamicFont" id=2]
+[sub_resource type="DynamicFont" id=3]
 size = 48
 font_data = ExtResource( 2 )
 
-[sub_resource type="DynamicFont" id=3]
+[sub_resource type="DynamicFont" id=4]
 size = 8
 font_data = ExtResource( 1 )
 
@@ -45,7 +47,6 @@ __meta__ = {
 }
 
 [node name="MenuButtons" type="MarginContainer" parent="."]
-visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -126,6 +127,7 @@ margin_bottom = 54.0
 text = "START GAME"
 
 [node name="Lobby" type="MarginContainer" parent="."]
+visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -203,7 +205,7 @@ margin_top = 92.0
 margin_right = 175.0
 margin_bottom = 110.0
 rect_min_size = Vector2( 0, 18 )
-custom_fonts/font = SubResource( 4 )
+custom_fonts/font = SubResource( 2 )
 text = "START"
 
 [node name="Multiplayer" type="VBoxContainer" parent="."]
@@ -331,7 +333,7 @@ margin_top = 5.0
 margin_right = 183.0
 margin_bottom = 37.0
 theme = ExtResource( 4 )
-custom_fonts/font = SubResource( 2 )
+custom_fonts/font = SubResource( 3 )
 text = "Space Schmup"
 align = 1
 uppercase = true
@@ -346,8 +348,57 @@ margin_left = -46.0
 margin_top = -20.0
 margin_right = -6.0
 margin_bottom = -6.0
-custom_fonts/font = SubResource( 3 )
+custom_fonts/font = SubResource( 4 )
 text = "Back"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -36.0
+margin_right = 48.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AboutUs" type="TextureButton" parent="CenterContainer"]
+margin_left = 8.0
+margin_top = 2.0
+margin_right = 38.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 30, 30 )
+texture_normal = ExtResource( 8 )
+texture_pressed = ExtResource( 7 )
+texture_hover = ExtResource( 7 )
+expand = true
+
+[node name="Credits" type="CenterContainer" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 56.0
+margin_top = -132.0
+margin_right = -48.0
+margin_bottom = -4.0
+theme = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Credits"]
+margin_left = 47.0
+margin_top = 16.0
+margin_right = 169.0
+margin_bottom = 112.0
+text = "Programming:
+Matthew Harrison
+Stradex
+
+Art:
+Matthew Harrison
+
+Special Thanks:
+Nick MacKenzie"

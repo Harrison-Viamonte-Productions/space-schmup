@@ -41,6 +41,31 @@ enum SPAWN_TYPE {
 	ENEMY
 };
 
+
+var wave_count_left: int = 0
+var current_wave_type_count: int = 0
+var current_wave_type: int = 0
+
+enum WAVE_TYPE {
+	NORMAL, #normal spawn mode
+	ENEMIES, # only enemies
+	ASTEROIDS, #only asteroids
+	SPAM, #50% extra ammount spawn
+	RELAX, #A wave that actually is easy to slow down the game from time to time... for suspense I guess?
+	MAX_TYPES #Keep always at the end
+}
+const wave_chances: Array = [
+	WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL,
+	WAVE_TYPE.ENEMIES, WAVE_TYPE.ASTEROIDS, WAVE_TYPE.SPAM, WAVE_TYPE.RELAX
+];
+const wave_limits: Dictionary = {
+	WAVE_TYPE.NORMAL: 15,
+	WAVE_TYPE.ASTEROIDS: 6,
+	WAVE_TYPE.ENEMIES: 6,
+	WAVE_TYPE.SPAM: 3,
+	WAVE_TYPE.RELAX: 2
+}
+
 signal level_speed_changed(new_speed)
 signal extra_life
 
@@ -91,6 +116,9 @@ func clear_stage():
 	max_difficulty = 0
 	enemies_count = 0;
 	max_level_speed = 0
+	wave_count_left = 0
+	current_wave_type_count = 0
+	current_wave_type = 0
 	rng.randomize();
 
 sync func game_over():
@@ -137,9 +165,25 @@ sync func restart_map():
 func _on_spawn_timer_timeout():
 	if !Game.is_network_master_or_sp(self) or game_finished:
 		return;
+	
+	wave_count_left-=1
+	
+	if wave_count_left <= 0:
+		wave_count_left = rng.randi_range(15, 35)
+		var old_wave_type: int = current_wave_type
+		current_wave_type = wave_chances[rng.randi()%wave_chances.size()]
+		if old_wave_type == current_wave_type:
+			current_wave_type_count +=1
+			if current_wave_type_count > wave_limits[current_wave_type]:
+				current_wave_type_count = 0
+				current_wave_type+=1
+				if current_wave_type == WAVE_TYPE.MAX_TYPES:
+					current_wave_type = WAVE_TYPE.NORMAL
+		else:
+			current_wave_type_count = 0
 	#We keep sending the seed always to not put in risk the fact that maybe a missing packet (even while using rpc!) 
 	#made the client not receive the new sync and then BOOM, desync everywhere!
-	Game.rpc_sp(self, "generate_enemies", [score, rng.get_seed()])
+	Game.rpc_sp(self, "generate_enemies", [score, current_wave_type, rng.get_seed(), players_alive]) #send the players_alive just in case I don't want to be TOTALLY SURE the client shares the sale value
 
 func adjut_level_properties():
 	if !pcg_data_configured:
@@ -159,7 +203,7 @@ func adjut_level_properties():
 		difficulty_curve = rng.randf_range(0.4, 0.95)
 		pcg_data_configured = true
 
-sync func generate_enemies(current_score: int, new_seed: int):
+sync func generate_enemies(current_score: int, used_wave_type: int, new_seed: int, players_alive_in_game: int):
 	rng.set_seed(new_seed); # GOLD <3
 	enemies_grid.set_random_seed(new_seed)
 	asteroids_grid.set_random_seed(new_seed)
@@ -169,10 +213,28 @@ sync func generate_enemies(current_score: int, new_seed: int):
 	var scaleMax = (ASTEROID_MAX_SCALE-1.0)*get_difficulty_scale(float(current_score), SCORE_LIMIT)+1.0
 	var spawn_data: Array = [];
 	enemies_grid.clear_grid(0); #0 being not used
-	for i in range(int(rng.randf_range(1.0, float(difficulty)))):
+	var enemies_to_spawn: float = rng.randf_range(1.0, float(difficulty))
+	if used_wave_type == WAVE_TYPE.SPAM:
+		enemies_to_spawn *= 1.5
+	elif used_wave_type == WAVE_TYPE.RELAX:
+		enemies_to_spawn *= 0.25 #to give some time to breath from time to time
+	elif used_wave_type == WAVE_TYPE.ENEMIES:
+		enemies_to_spawn *= 0.75 #otherwise it is a bit unfair
+	
+	#The more players the harder
+	if players_alive_in_game <= 1:
+		enemies_to_spawn*=0.8
+	elif players_alive_in_game >= 3:
+		enemies_to_spawn*=1.2
+		difficulty += 2
+		
+	if enemies_to_spawn < 1.0:
+		enemies_to_spawn = 1.0 # to ensure at least 1 enemy always
+	
+	for i in range(int(enemies_to_spawn)):
 		var spawnargs: Dictionary;
 		var random_cell_pos: Vector2;
-		if rng.randi_range(0, 100) < 25:
+		if (rng.randi_range(0, 100) < 25 or used_wave_type == WAVE_TYPE.ENEMIES) and used_wave_type != WAVE_TYPE.ASTEROIDS: # spawn enemies
 			var random_cell: Vector2 = enemies_grid.get_random_cell_filter(0);
 			random_cell_pos = enemies_grid.get_world_pos_from_cell_centered(random_cell);
 			enemies_grid.set_cellv(random_cell, 1); #To avoid spawning two enemies in the very same position
@@ -186,7 +248,7 @@ sync func generate_enemies(current_score: int, new_seed: int):
 			};
 			if rng.randi_range(0, 100) % 100 < 25:
 				spawnargs.speed = Vector2(40.0, rng.randi_range(-10.0, 10.0));
-		else:
+		else: #spawn asteroids
 			random_cell_pos = asteroids_grid.get_world_pos_from_cell_centered(asteroids_grid.get_random_cell());
 			spawnargs = {
 				idspawn = SPAWN_TYPE.ASTEROID,
@@ -317,7 +379,7 @@ func calculate_difficulty(score: float, end_score: float, end_difficulty: float)
 func calculate_level_speed(score: float, end_score:float, start_speed, end_speed: float) -> float:
 	return (end_speed-start_speed)*get_difficulty_scale(score, end_score)+start_speed;
 
-func sigmoid_curve(x: float, grow: float) -> float:
+func sigmoid_curve(x: float, grow: float) -> float: #Gold function
 	x = clamp(x, 0.0, 1.0)
 	grow = clamp(grow, 0.0, 1.0)
 	if (1.0-x) == 0:

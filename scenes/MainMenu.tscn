@@ -364,10 +364,10 @@ __meta__ = {
 }
 
 [node name="AboutUs" type="TextureButton" parent="CenterContainer"]
-margin_left = 8.0
-margin_top = 2.0
-margin_right = 38.0
-margin_bottom = 32.0
+margin_left = 9.0
+margin_top = 3.0
+margin_right = 39.0
+margin_bottom = 33.0
 rect_min_size = Vector2( 30, 30 )
 texture_normal = ExtResource( 8 )
 texture_pressed = ExtResource( 7 )

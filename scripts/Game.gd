@@ -32,14 +32,14 @@ var PingUtil: LatencyCounter = LatencyCounter.new(self, "update_latency", TOOLS.
 #CVARS
 var sv_shared_lives: bool = false
 
-var skills: Array = [
+var skills_names: Array = [
 	'Easy',
 	'Medium',
 	'Hard',
 	'Not cool'
 ]
 
-enum {
+enum SKILL {
 	EASY,
 	MEDIUM,
 	HARD,
@@ -139,26 +139,32 @@ func clear_players(level: Node):
 	for player in level.get_node("Players").get_children():
 		player.call_deferred("queue_free")
 
-func spawn_players(level: Node):
-	#Populate each player
+func spawn_players_in_level(level: Node):
 	clear_players(level)
 	var i = 0;
-	for p_id in players:
-		var player_node: Player = player_scene.instance()
-		player_node.set_name(str(p_id))
-		player_node.nickname = players[p_id]
-		player_node.position = Vector2(50.0, 50.0+25.0*i)
-		#player_node.modulate = colors_to_pick[i]
-		player_node.set_network_master(p_id)
-		level.get_node("Players").add_child(player_node)
-		player_node.connect("destroyed", level, "_on_player_destroyed")
-		player_node.connect("revived", level, "_on_player_revived")
-		player_node.connect("out_of_lives", level, "_on_player_out_of_lives")
-		level.connect("extra_life", player_node, "_on_extra_life")
+	for playerId in players:
+		var player_instance: Player = create_player(playerId, Vector2(50.0, 50.0+25.0*i))
+		add_player_to_level(player_instance, level)
 		i+=1
 	level.players_alive = i
 
-sync func start_game(difficulty: int = Game.EASY):
+func create_player(playerId: int, position: Vector2) -> Player:
+	var player_instance: Player = player_scene.instance()
+	player_instance.set_name(str(playerId))
+	player_instance.nickname = players[playerId]
+	player_instance.position = position
+	player_instance.set_network_master(playerId)
+	#player_instance.modulate = color
+	return player_instance
+
+func add_player_to_level(playerInstance, levelInstance):
+	levelInstance.get_node("Players").add_child(playerInstance)
+	playerInstance.connect("destroyed", levelInstance, "_on_player_destroyed")
+	playerInstance.connect("revived", levelInstance, "_on_player_revived")
+	playerInstance.connect("out_of_lives", levelInstance, "_on_player_out_of_lives")
+	levelInstance.connect("extra_life", playerInstance, "_on_extra_life")
+
+sync func start_game(difficulty: int = SKILL.EASY):
 	if game_started: 
 		return; #FIXME: This should never happen
 
@@ -170,7 +176,7 @@ sync func start_game(difficulty: int = Game.EASY):
 	connect("mute", arena, "muted");
 	connect("unmute", arena, "unmuted");
 	get_tree().get_root().add_child(arena);
-	spawn_players(arena);
+	spawn_players_in_level(arena);
 	game_started = true;
 	emit_signal("game_started");
 

@@ -41,7 +41,7 @@ func _ready():
 	Game.connect("player_list_updated", self, "_update_player_list");
 	DifficultyOption.clear()
 	DifficultyOptionSP.clear()
-	for skill in Game.skills:
+	for skill in Game.skills_names:
 		DifficultyOption.add_item(skill)
 		DifficultyOptionSP.add_item(skill)
 	DifficultyOption.select(0)
@@ -114,7 +114,7 @@ func exit_game():
 
 func start_mp_game():
 	if get_tree().is_network_server():
-		var netgame_difficulty: int = clamp(DifficultyOption.get_selected(), 0, Game.skills.size()-1)
+		var netgame_difficulty: int = clamp(DifficultyOption.get_selected(), 0, Game.skills_names.size()-1)
 		Game.rpc("start_game", netgame_difficulty);
 
 func sp_game_tab():
@@ -125,7 +125,7 @@ func sp_game_tab():
 	$Lobby.hide()
 
 func start_offline_game():
-	var game_difficulty: int = clamp(DifficultyOptionSP.get_selected(), 0, Game.skills.size()-1)
+	var game_difficulty: int = clamp(DifficultyOptionSP.get_selected(), 0, Game.skills_names.size()-1)
 	Game.register_player(Game.SERVER_NETID, PlayerNameTextEdit.text)
 	Game.start_game(game_difficulty)
 

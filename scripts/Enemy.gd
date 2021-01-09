@@ -8,6 +8,7 @@ const ACCEL_SPEED: float = 70.0
 const MIN_SLIDE_SPEED: float = 50.0
 const MAX_SLIDE_SPEED: float = 80.0
 const SLID_DESACCEL: float = 45.0
+const SCREEN_MARGIN: float = 8.0
 
 var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn");
 var shoot_scene: PackedScene = preload("res://scenes/shot.tscn");
@@ -53,7 +54,7 @@ func _ready():
 	init_colors()
 
 func _on_slide_timeout():
-	if (global_position.y < 8 or global_position.y > (Game.SCREEN_HEIGHT-8)):
+	if !is_in_screen_height(global_position.y):
 		return # avoid undesired bug while a shipt was already out of screen
 	if rng.randi()%100 <= 15:
 		var new_slide_speed: int = rng.randf_range(MIN_SLIDE_SPEED, MAX_SLIDE_SPEED)
@@ -61,6 +62,9 @@ func _on_slide_timeout():
 			slide_velocity = Vector2(0.0, new_slide_speed)
 		else:
 			slide_velocity = Vector2(0.0, -new_slide_speed)
+
+func is_in_screen_height(position_y: int) -> bool:
+	return position_y >= SCREEN_MARGIN and position_y <= (Game.SCREEN_HEIGHT-SCREEN_MARGIN)
 
 func update_slide_vel(delta):
 	if slide_velocity.x > 0.0:
@@ -109,10 +113,15 @@ func init_paths():
 func get_paths_count() -> int:
 	return paths_to_follow.size()
 
-func follow_path(path_index: int, delta: float) -> Vector2:
+func process_path(path_to_follow: int, delta: float):
+	if path_to_follow == -1:
+		return Vector2.ZERO
+	update_path(path_to_follow)
+	follow_path(path_to_follow, delta)
+
+func update_path(path_index: int): 
 	var path_selected: Array = paths_to_follow[path_index]
 	var points_count: int = path_selected.size()
-		
 	if current_path_following.pathindex != path_index: #New path to follow selected
 		current_path_following.pathindex = path_index
 		var closest_index: int = 0
@@ -121,7 +130,9 @@ func follow_path(path_index: int, delta: float) -> Vector2:
 				closest_index = i
 		current_path_following.nextpoint = closest_index
 		current_path_following.direction = (path_selected[closest_index] - local_path_position).normalized()
-	
+
+func follow_path(path_index: int, delta: float):
+	var path_selected: Array = paths_to_follow[path_index]
 	var next_point_pos: Vector2 = path_selected[current_path_following.nextpoint]
 	var distance_to_pos: Vector2 = next_point_pos - local_path_position
 	var new_position: Vector2 = Vector2.ZERO
@@ -131,8 +142,6 @@ func follow_path(path_index: int, delta: float) -> Vector2:
 	# we use squared for performance (to avoid sqrt)
 	if new_position.distance_squared_to(next_point_pos) <= pow(FOLLOW_PATH_SPEED*delta+0.2, 2.0): #Allow small margin of error
 		move_to_next_path_point(path_index)
-	
-	return new_position
 
 func move_to_next_path_point(path_index:int):
 	var path_selected: Array = paths_to_follow[path_index]
@@ -142,14 +151,6 @@ func move_to_next_path_point(path_index:int):
 	if current_path_following.nextpoint >= points_count:
 		current_path_following.nextpoint = 0
 	current_path_following.direction = (path_selected[current_path_following.nextpoint] - local_path_position).normalized()
-
-func update_and_get_path_follow_motion(path_to_follow, delta) -> Vector2:
-	if path_to_follow == -1:
-		return Vector2.ZERO
-	var old_local_path_position: Vector2  = local_path_position
-	local_path_position  = follow_path(path_to_follow, delta)
-	var path_follow_motion: Vector2 = (local_path_position-old_local_path_position)
-	return path_follow_motion
 
 #####################
 # END PATH NODES MOVEMENT
@@ -188,16 +189,15 @@ func move(delta):
 
 	#var velocity: Vector2 = Vector2.ZERO
 	var new_position: Vector2 = position
-	update_and_get_path_follow_motion(current_path_to_follow, delta)
+	process_path(current_path_to_follow, delta)
 	new_position+=get_current_vel()*delta
-	if (new_position.y < 8 or new_position.y > (Game.SCREEN_HEIGHT-8)):
-		if current_path_to_follow >= 0:
-			move_to_next_path_point(current_path_to_follow)
-			new_position.y = clamp(new_position.y, 8, Game.SCREEN_HEIGHT-8)
-		
-		if slide_velocity.length_squared() > 1.0:
-			new_position.y = clamp(new_position.y, 8, Game.SCREEN_HEIGHT-8)
-			slide_velocity = -slide_velocity
+	if !is_in_screen_height(new_position.y):
+		if current_path_to_follow >= 0 or slide_velocity.length_squared() > 1.0:
+			new_position.y = clamp(new_position.y, SCREEN_MARGIN, Game.SCREEN_HEIGHT-SCREEN_MARGIN)
+			if current_path_to_follow >= 0:
+				move_to_next_path_point(current_path_to_follow)
+			if slide_velocity.length_squared() > 1.0:
+				slide_velocity = -slide_velocity
 	position = new_position
 
 func update_anim():

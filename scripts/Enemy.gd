@@ -222,7 +222,7 @@ func destroy():
 	stage_node.call_deferred("add_child", explosion_instance)
 
 func _on_enemy_area_entered(area):
-	if (area is Projectile) and (!area.fired_by or typeof(area.fired_by) == TYPE_NIL or area.fired_by is Player):
+	if (area is Projectile) and !area.is_fired_by_enemy():
 		health-=1;
 		#$AnimationPlayer.play("hit");
 		area.destroy();
@@ -251,7 +251,7 @@ func _on_shoot_timer_timeout():
 		shoot_instanceB.motion = shoot_velocity
 		#f70000
 		shoot_instanceB.modulate = Color("ffdd00"); 
-		shoot_instanceB.fired_by = self;
+		shoot_instanceB.set_fired_by_enemy(true)
 		shoot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
 		shoot_instance.position = position+Vector2(-9, -5);
 		shoot_instanceB.position = position+Vector2(-9, 5);
@@ -260,7 +260,7 @@ func _on_shoot_timer_timeout():
 		shoot_instance.position = position+Vector2(-9, 0);
 
 	shoot_instance.modulate = Color("ffdd00"); 
-	shoot_instance.fired_by = self;
+	shoot_instance.set_fired_by_enemy(true)
 	shoot_instance.motion = shoot_velocity
 	parent_node.call_deferred("add_child", shoot_instance);
 

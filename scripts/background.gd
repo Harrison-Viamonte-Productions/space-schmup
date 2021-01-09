@@ -70,8 +70,8 @@ func move_stars_layer(delta: float, layer_index: int):
 		var tile_map_end_cell: Vector2 = stars_tiles[layer_index].map.world_to_map(Vector2(Game.SCREEN_WIDTH, 0))
 		var cell_offset: Vector2 = stars_tiles[layer_index].map.world_to_map(Vector2(-stars_tiles[layer_index].map.position.x, 0))
 		stars_tiles[layer_index].pos.x += Game.SCREEN_WIDTH;
-		for x in range(cell_offset.x - tile_map_end_cell.x, cell_offset.x): # cleaning tiles
-			for y in 60:
+		for x in range(cell_offset.x - tile_map_end_cell.x, cell_offset.x):
+			for y in range(stars_grid.get_grid_size().y):
 				stars_tiles[layer_index].map.set_cell(x, y, -1)
 		generate_stars_in_tiles(layer_index, cell_offset+tile_map_end_cell)
 

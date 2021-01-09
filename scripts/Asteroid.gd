@@ -3,7 +3,7 @@ extends Area2D
 const SHOOT_PUSH_FACTOR: float = 0.3
 
 var explosion_scene = preload("res://scenes/explosion.tscn");
-export var move_speed: Vector2 = Vector2(100.0, 0.0); # I am sorry math, I know this is velocity and not speed, but I am lazy
+export var move_speed: Vector2 = Vector2(100.0, 0.0);
 export var health: int = 1;
 var base_speed: Vector2 = Vector2.ZERO
 var is_destroyed = false;
@@ -55,7 +55,7 @@ func destroy():
 
 func hit():
 	health-=1;
-	move_mod*=1.0-SHOOT_PUSH_FACTOR/scale.length(); #Push factor affected by asteroid's size
+	move_mod*=1.0-SHOOT_PUSH_FACTOR/scale.length();
 	$AnimationPlayer.play("hit");
 
 func _on_asteroid_area_entered(area):

@@ -24,7 +24,7 @@ var double_shoot = false
 var nickname = "player"
 
 var explosion_scene: PackedScene = preload("res://scenes/explosion.tscn")
-var shot_scene: PackedScene = preload("res://scenes/shot.tscn")
+var shoot_scene: PackedScene = preload("res://scenes/shot.tscn")
 var snapshotData: Dictionary = {pos = Vector2()}
 var spawn_protection_time: float = SPAWN_PROTECTION_DURATION
 var respawn_time: float = 0
@@ -122,24 +122,33 @@ sync func shoot_missile(is_double_shoot: bool):
 	if !is_instance_valid(parent_node):
 		print("[WARNING] invalid instance at player::shoot_missile")
 		return
-	var shot_instanceA: Projectile = shot_scene.instance();
 	if is_double_shoot:
-		var shot_instanceB: Projectile = shot_scene.instance();
-		shot_instanceB.motion = Vector2(500.0, 0.0);
-		shot_instanceB.fired_by = self;
-		shot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
-		shot_instanceA.position = position+Vector2(9, -5);
-		shot_instanceB.position = position+Vector2(9, 5);
-		shot_instanceB.set_network_master(self.get_network_master());
-		#parent_node.add_child(shot_instanceB);
-		parent_node.call_deferred("add_child", shot_instanceB)
+		shoot_two_missiles()
 	else:
-		shot_instanceA.position = position+Vector2(9, 0);
-	shot_instanceA.motion = Vector2(500.0, 0.0);
-	shot_instanceA.fired_by = self;
-	shot_instanceA.set_network_master(self.get_network_master());
-	#parent_node.add_child(shot_instanceA);
-	parent_node.call_deferred("add_child", shot_instanceA)
+		shoot_one_missile()
+
+func shoot_one_missile():
+	var shoot_instance: Projectile = shoot_scene.instance();
+	shoot_instance.position = position+Vector2(9, 0);
+	shoot_instance.motion = Vector2(500.0, 0.0);
+	shoot_instance.set_fired_by_enemy(false)
+	shoot_instance.set_network_master(self.get_network_master());
+	get_parent().call_deferred("add_child", shoot_instance)
+
+func shoot_two_missiles():
+	var shoot_instanceA: Projectile = shoot_scene.instance();
+	var shoot_instanceB: Projectile = shoot_scene.instance();
+	shoot_instanceB.motion = Vector2(500.0, 0.0);
+	shoot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
+	shoot_instanceB.position = position+Vector2(9, 5);
+	shoot_instanceB.set_network_master(self.get_network_master());
+	shoot_instanceB.set_fired_by_enemy(false)
+	shoot_instanceA.position = position+Vector2(9, -5);
+	shoot_instanceA.motion = Vector2(500.0, 0.0);
+	shoot_instanceA.set_fired_by_enemy(false)
+	shoot_instanceA.set_network_master(self.get_network_master());
+	get_parent().call_deferred("add_child", shoot_instanceB)
+	get_parent().call_deferred("add_child", shoot_instanceA)
 
 func move(delta):
 	move_and_slide(MOVE_SPEED*direction);
@@ -150,11 +159,21 @@ func adjust_position_to_bounds():
 
 func hit():
 	if Game.is_network_master_or_sp(self) && is_alive:
-		Game.rpc_sp(self, "_on_destroyed", [lives]);
+		Game.rpc_sp(self, "_on_destroyed", [lives-1]);
 
 func _exit_tree():
 	remove_from_group("players");
 	remove_from_group("network_nodes");
+
+func spawn_death_explosion(): 
+	var stage_node = get_parent();
+	if is_instance_valid(stage_node):
+		var explosion_instance = explosion_scene.instance();
+		explosion_instance.position = position;
+		stage_node.call_deferred("add_child", explosion_instance)
+	else:
+		print("[WARNING] invalid instance at Player::spawn_death_explosion")
+		
 
 ###########################
 # Signal handlers
@@ -183,24 +202,17 @@ sync func _on_revived():
 
 sync func _on_destroyed(new_lives: int):
 	if is_alive && spawn_protection_time <= 0.0:
-		lives=new_lives-1
-		var stage_node = get_parent();
-		if is_instance_valid(stage_node):
-			var explosion_instance = explosion_scene.instance();
-			explosion_instance.position = position;
-			#stage_node.add_child(explosion_instance);
-			stage_node.call_deferred("add_child", explosion_instance)
-		else:
-			print("[WARNING] invalid instance at Player::_on_destroyed")
+		spawn_death_explosion()
+		lives=new_lives
 		is_alive = false;
-		$sprite.hide()
-		$hit_zone.set_deferred("disabled", true)
 		if Game.sv_shared_lives or lives > 0:
 			$respawn_timer.show()
 			respawn_time = RESPAWN_DURATION
 		else:
 			$name.hide()
 			emit_signal("out_of_lives", self);
+		$sprite.hide()
+		$hit_zone.set_deferred("disabled", true)
 		emit_signal("destroyed", self, lives);
 
 func flash_message(text):

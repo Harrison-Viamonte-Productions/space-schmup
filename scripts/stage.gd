@@ -46,12 +46,12 @@ var current_wave_type_count: int = 0
 var current_wave_type: int = 0
 
 enum WAVE_TYPE {
-	NORMAL, #normal spawn mode
-	SPACESHIPS, # only enemies
-	ASTEROIDS, #only asteroids
+	NORMAL,
+	SPACESHIPS,
+	ASTEROIDS,
 	SPAM, #50% extra ammount spawn
 	RELAX, #A wave that actually is easy to slow down the game from time to time... for suspense I guess?
-	MAX_TYPES #Keep always at the end
+	MAX_TYPES
 }
 const wave_chances: Array = [
 	WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL, WAVE_TYPE.NORMAL,
@@ -163,14 +163,14 @@ sync func restart_map():
 func _on_spawn_timer_timeout():
 	if !Game.is_network_master_or_sp(self) or game_finished:
 		return;
-	
+
+	wave_count_left-=1
 	update_wave_data()
 	#We keep sending the seed always to not put in risk the fact that maybe a missing packet (even while using rpc!) 
 	#made the client not receive the new sync and then BOOM, desync everywhere!
 	Game.rpc_sp(self, "process_spawn_timer", [score, current_wave_type, rng.get_seed(), players_alive]) #send the players_alive just in case I don't want to be TOTALLY SURE the client shares the sale value
 
 func update_wave_data():
-	wave_count_left-=1
 	if wave_count_left <= 0:
 		wave_count_left = rng.randi_range(15, 35)
 		var old_wave_type: int = current_wave_type
@@ -184,6 +184,17 @@ func update_wave_data():
 					current_wave_type = WAVE_TYPE.NORMAL
 		else:
 			current_wave_type_count = 0
+
+sync func process_spawn_timer(current_score: int, used_wave_type: int, new_seed: int, players_alive_in_game: int):
+	update_random_seed(new_seed) #sync random seed
+	adjust_level_difficulty()
+	var enemies_data: Array = get_enemies_to_spawn(current_score, used_wave_type, players_alive_in_game)
+	spawn_enemies(enemies_data);
+
+func update_random_seed(new_seed: int):
+	rng.set_seed(new_seed);
+	enemies_grid.set_random_seed(new_seed)
+	asteroids_grid.set_random_seed(new_seed)
 
 func adjust_level_difficulty():
 	if !pcg_data_configured:
@@ -202,17 +213,6 @@ func adjust_level_difficulty():
 				max_level_speed = rng.randi_range(START_LEVEL_SPEED*5, START_LEVEL_SPEED*7)
 		difficulty_curve = rng.randf_range(0.4, 0.95)
 		pcg_data_configured = true
-
-func update_random_seed(new_seed: int):
-	rng.set_seed(new_seed);
-	enemies_grid.set_random_seed(new_seed)
-	asteroids_grid.set_random_seed(new_seed)
-
-sync func process_spawn_timer(current_score: int, used_wave_type: int, new_seed: int, players_alive_in_game: int):
-	update_random_seed(new_seed) #sync random seed
-	adjust_level_difficulty()
-	var enemies_data: Array = get_enemies_to_spawn(current_score, used_wave_type, players_alive_in_game)
-	spawn_enemies(enemies_data);
 
 func get_enemies_to_spawn(current_score: int, used_wave_type: int, players_alive_in_game: int) -> Array: 
 	var difficulty = round(calculate_difficulty(float(current_score), SCORE_LIMIT, max_difficulty))
@@ -309,7 +309,6 @@ func spawn_enemies(enemies_spawnargs: Array):
 	for spawnargs in enemies_spawnargs:
 		var spawn_instance: Node2D = get_enemy_instance_from_spawnargs(spawnargs, enemies_count);
 		enemies_count+=1;
-		#get_node("Enemies").add_child(spawn_instance);
 		get_node("Enemies").call_deferred("add_child", spawn_instance)
 
 func update_level_speed(new_speed: float):

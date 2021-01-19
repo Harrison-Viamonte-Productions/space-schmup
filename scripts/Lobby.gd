@@ -42,7 +42,10 @@ func _ready():
 		DifficultyOptionSP.add_item(skill)
 	DifficultyOption.select(0)
 	DifficultyOptionSP.select(0)
-	
+	if OS.has_feature("HTML5"): # No coop for html5 by now
+		MultiplayerBtn.hide()
+		ExitGameBtn.hide()
+		
 	init_main_menu()
 
 func init_main_menu():

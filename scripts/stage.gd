@@ -330,7 +330,7 @@ func spawn_boss():
 	boss_instance.position = Vector2(Game.SCREEN_WIDTH*0.8, Game.SCREEN_HEIGHT/2.0)
 	connect("level_speed_changed", boss_instance, "on_level_speed_changed" )
 	boss_instance.connect("destroyed", self, "_on_boss_killed");
-	boss_instance.set_name(str(enemies_count)); #netcode
+	boss_instance.set_name("final_boss"); #netcode
 	enemies_count+=1;
 	get_node("Enemies").call_deferred("add_child", boss_instance)
 

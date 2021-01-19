@@ -28,7 +28,7 @@ sync func death_sync():
 	stage_node.call_deferred("add_child", explosion_instance)
 
 func _on_enemy_body_entered(body):
-	body.hit()
+	body.hit() #You can't kill the boss by colliding with it
 
 func _on_shoot_timer_timeout():
 	if position.x > Game.SCREEN_WIDTH:

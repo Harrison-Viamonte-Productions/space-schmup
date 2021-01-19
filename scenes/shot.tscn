@@ -19,6 +19,7 @@ animations = [ {
 [node name="shot" type="Area2D" groups=[
 "shot",
 ]]
+modulate = Color( 0, 0.972549, 0.67451, 1 )
 script = ExtResource( 3 )
 
 [node name="damage_zone" type="CollisionShape2D" parent="."]

@@ -47,8 +47,9 @@ enum SKILL {
 }
 
 var colors_to_pick: Array = [
-	"e37712",
+	"00f8ac",
 	"6e79db",
+	"bf2832",
 	"bf2832"
 ];
 
@@ -144,6 +145,7 @@ func spawn_players_in_level(level: Node):
 	var i = 0;
 	for playerId in players:
 		var player_instance: Player = create_player(playerId, Vector2(50.0, 50.0+25.0*i))
+		player_instance.client_color = colors_to_pick[i]
 		add_player_to_level(player_instance, level)
 		i+=1
 	level.players_alive = i

@@ -1,3 +1,4 @@
+class_name Enemy
 extends Area2D
 
 const FOLLOW_PATH_SPEED: float = 50.0
@@ -15,13 +16,13 @@ var shoot_scene: PackedScene = preload("res://scenes/shot.tscn");
 export var move_speed: Vector2 = Vector2(70.0, 0.0);
 export var health: int = 3;
 export var fire_rate: float = 1.0;
+var ignore_base_velocity: bool = false
 
 var slide_velocity: Vector2 = Vector2.ZERO
 var fire_shoot_speed: float = 50.0
 var is_on_viewport = false
 var is_destroyed = false;
 var base_speed: Vector2 = Vector2.ZERO
-var ignore_base_velocity: bool = false
 var double_shoot: bool = false
 
 # Path nodes movement stuff
@@ -39,7 +40,10 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new();
 
 signal destroyed;
 
+onready var SpriteColorShader = preload("res://Shaders/SpriteColorDeMierda.shader")
+
 func _ready():
+	init_material()
 	init_difficulty() #This first because it sets the timer fire_rate
 		
 	self.connect("area_entered", self, "_on_enemy_area_entered");
@@ -52,6 +56,11 @@ func _ready():
 	add_to_group("enemies");
 	init_paths()
 	init_colors()
+
+func init_material():
+	$Sprite.material = ShaderMaterial.new()
+	$Sprite.material.shader = SpriteColorShader
+	$Sprite.get_material().set_shader_param("new", Color("ffffff"))
 
 func _on_slide_timeout():
 	if !is_in_screen_height(global_position.y):
@@ -223,11 +232,14 @@ func destroy():
 
 func _on_enemy_area_entered(area):
 	if (area is Projectile) and !area.is_fired_by_enemy():
-		health-=1;
-		#$AnimationPlayer.play("hit");
+		hit()
 		area.destroy();
 	if !is_destroyed && health <= 0:
 		destroy();
+
+func hit():
+	health-=1
+	$AnimationPlayer.play("hit")
 
 func _on_enemy_body_entered(body):
 	health = 0;
@@ -266,3 +278,9 @@ func _on_shoot_timer_timeout():
 
 func on_level_speed_changed(new_speed):
 	base_speed = new_speed
+
+func blink_on():
+	$Sprite.get_material().set_shader_param("enabled", true)
+
+func blink_off():
+	$Sprite.get_material().set_shader_param("enabled", false)

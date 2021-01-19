@@ -29,11 +29,7 @@ func _ready():
 	DifficultyOption.connect("item_selected", self, "on_difficulty_selected")
 	SharedLivesCheckBox.connect("pressed", self, "on_shared_lives_changed")
 	CreditsBtn.connect("pressed", self, "show_credits")
-	$Multiplayer.hide()
-	$MenuButtons.show()
-	$Lobby.hide()
-	$SPGame.hide()
-	BackToMenuBtn.hide()
+
 	#Network signals
 	Game.connect("game_ended", self, "_reset_menu");
 	Game.connect("waiting_for_players", self, "show_lobby");
@@ -46,8 +42,21 @@ func _ready():
 		DifficultyOptionSP.add_item(skill)
 	DifficultyOption.select(0)
 	DifficultyOptionSP.select(0)
+	
+	init_main_menu()
+
+func init_main_menu():
+	$Multiplayer.hide()
+	$MenuButtons.show()
+	$Lobby.hide()
+	$SPGame.hide()
+	BackToMenuBtn.hide()
+	$LogoSmall.hide()
+	$LogoBig.show()
 
 func show_lobby():
+	$LogoSmall.show()
+	$LogoBig.hide();
 	$Lobby.show()
 	$MenuButtons.hide()
 	$Multiplayer.hide()
@@ -88,6 +97,8 @@ sync func shared_lives_set(new_val: bool):
 func show_multiplayer_menu():
 	$Multiplayer.show()
 	$MenuButtons.hide()
+	$LogoSmall.show()
+	$LogoBig.hide();
 	BackToMenuBtn.show()
 
 func go_back():
@@ -96,6 +107,8 @@ func go_back():
 	$Lobby.hide()
 	$Credits.hide()
 	$SPGame.hide()
+	$LogoSmall.hide()
+	$LogoBig.show()
 	BackToMenuBtn.hide()
 	HostServerBtn.disabled = false;
 	ConnectServerBtn.disabled = false;
@@ -107,6 +120,8 @@ func show_credits():
 	$SPGame.hide()
 	$Lobby.hide()
 	$MenuButtons.hide()
+	$LogoSmall.show()
+	$LogoBig.hide()
 	BackToMenuBtn.show()
 	
 func exit_game():
@@ -123,6 +138,8 @@ func sp_game_tab():
 	$MenuButtons.hide()
 	$Multiplayer.hide()
 	$Lobby.hide()
+	$LogoSmall.hide()
+	$LogoBig.show()
 
 func start_offline_game():
 	var game_difficulty: int = clamp(DifficultyOptionSP.get_selected(), 0, Game.skills_names.size()-1)
@@ -156,6 +173,8 @@ func _reset_menu():
 	$MenuButtons.show()
 	$Lobby.hide()
 	$SPGame.hide()
+	$LogoSmall.hide()
+	$LogoBig.show()
 	BackToMenuBtn.hide()
 	HostServerBtn.disabled = false
 	ConnectServerBtn.disabled = false

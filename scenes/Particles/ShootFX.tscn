@@ -22,6 +22,5 @@ initial_velocity_random = 0.5
 angular_velocity = 100.0
 angular_velocity_random = 1.0
 angle_random = 1.0
-color = Color( 0.435294, 1, 0.803922, 1 )
 
 [node name="Tween" type="Tween" parent="."]

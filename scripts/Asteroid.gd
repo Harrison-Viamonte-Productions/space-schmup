@@ -10,21 +10,29 @@ var is_destroyed = false
 signal destroyed
 var spawn_rotation: float = 0
 var move_mod: float = 1
+onready var SpriteColorShader = preload("res://Shaders/SpriteColorDeMierda.shader")
 
 func _ready():
+	init_material()
+	
 	add_to_group("enemies");
 	$destroyed_sound.connect("finished", self, "_on_destroyedsnd_finished")
-	$sprite.rotation_degrees = spawn_rotation
+	$Sprite.rotation_degrees = spawn_rotation
 	if self.scale.x <= 1.10:
-		$sprite.play("small")
-		$sprite.scale = Vector2(1.0, 1.0)
+		$Sprite.play("small")
+		$Sprite.scale = Vector2(1.0, 1.0)
 	elif self.scale.x <= 1.6:
-		$sprite.play("medium")
-		$sprite.scale = Vector2(0.5, 0.5)
+		$Sprite.play("medium")
+		$Sprite.scale = Vector2(0.5, 0.5)
 	else:
-		$sprite.play("big")
-		$sprite.scale = Vector2(0.25, 0.25)
+		$Sprite.play("big")
+		$Sprite.scale = Vector2(0.25, 0.25)
 
+func init_material():
+	$Sprite.material = ShaderMaterial.new()
+	$Sprite.material.shader = SpriteColorShader
+	$Sprite.get_material().set_shader_param("new", Color("ffffff"))
+	
 func _on_destroyedsnd_finished():
 	call_deferred("queue_free")
 
@@ -41,7 +49,7 @@ func destroy():
 
 	$destroyed_sound.play();
 	$hit_zone.set_deferred("disabled", true)
-	$sprite.hide()
+	$Sprite.hide()
 	emit_signal("destroyed") # Call it here and not in exit_tree...
 	#call_deferred("queue_free")
 	var stage_node = get_parent()
@@ -80,3 +88,9 @@ func _on_asteroid_body_entered(body):
 
 func on_level_speed_changed(new_speed):
 	base_speed = new_speed
+
+func blink_on():
+	$Sprite.get_material().set_shader_param("enabled", true)
+
+func blink_off():
+	$Sprite.get_material().set_shader_param("enabled", false)

@@ -316,7 +316,27 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="LogoContainer" type="MarginContainer" parent="."]
+[node name="LogoBig" type="MarginContainer" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -144.0
+margin_right = 144.0
+margin_bottom = 96.0
+grow_horizontal = 2
+custom_constants/margin_top = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Logo" type="TextureRect" parent="LogoBig"]
+margin_right = 288.0
+margin_bottom = 96.0
+texture = ExtResource( 10 )
+expand = true
+stretch_mode = 1
+
+[node name="LogoSmall" type="MarginContainer" parent="."]
+visible = false
 anchor_left = 0.5
 anchor_right = 0.5
 margin_left = -96.0
@@ -328,7 +348,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextureRect" type="TextureRect" parent="LogoContainer"]
+[node name="Logo" type="TextureRect" parent="LogoSmall"]
 margin_right = 192.0
 margin_bottom = 56.0
 texture = ExtResource( 10 )

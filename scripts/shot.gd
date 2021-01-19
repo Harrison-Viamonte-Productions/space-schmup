@@ -39,6 +39,7 @@ func destroy():
 	$sprite.hide();
 	is_destroyed = true;
 	var particle_fx: Node2D = particles_scene.instance();
+	particle_fx.modulate = self.modulate
 	particle_fx.global_position = self.global_position;
 	get_parent().add_child(particle_fx);
 

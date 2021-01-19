@@ -10,21 +10,23 @@ extends Node2D
 # ############################
 
 const POINT_INCREMENT_SPEED = 25
-const POINT_PER_LIFE = 100;
-const START_LIVES = 3;
-const SCORE_LIMIT = 1000;
+const POINT_PER_LIFE = 100
+const START_LIVES = 3
+const SCORE_LIMIT = 1000
 const START_LEVEL_SPEED = 30.0
 const ASTEROID_MAX_SCALE = 2.25
+const MAX_ENEMIES_TO_SPAWN = 50
 
-var game_over = false;
-var game_finished = false;
-var asteroid_scene = preload("res://scenes/Asteroid.tscn");
-var enemy_spaceship_scene = preload("res://scenes/Enemy.tscn");
-var enemies_count: int = 0; #Important for netcode
-var score: int = 0;
-var players_alive: int = 0;
-var level_speed: float = START_LEVEL_SPEED; #The speed the background moves (or our base player speed illusion)
-var lives = START_LIVES;
+var game_over = false
+var game_finished = false
+var asteroid_scene = preload("res://scenes/Asteroid.tscn")
+var enemy_spaceship_scene = preload("res://scenes/Enemy.tscn")
+var boss_scene = preload("res://scenes/Boss.tscn")
+var enemies_count: int = 0 #Important for netcode
+var score: int = 0
+var players_alive: int = 0
+var level_speed: float = START_LEVEL_SPEED #The speed the background moves (or our base player speed illusion)
+var lives = START_LIVES
 var game_difficulty: int = Game.SKILL.EASY
 
 #Procedural generation stuff
@@ -35,6 +37,7 @@ var pcg_data_configured: bool = false
 var difficulty_curve: float = 0;
 var max_difficulty: int = 0;
 var max_level_speed: float = 0
+var boss_was_spawned: bool = false
 
 enum SPAWN_TYPE {
 	ASTEROID,
@@ -126,6 +129,7 @@ func clear_stage():
 	current_wave_type_count = 0
 	current_wave_type = 0
 	rng.randomize();
+	boss_was_spawned = false
 
 func _on_snapshot():
 	get_tree().call_group("network_nodes","_on_snapshot");
@@ -143,22 +147,22 @@ sync func process_game_over():
 		$ui/retry.text = "Waiting for server to restart..."
 	$ui/retry.show()
 
-func game_was_finished():
+sync func game_was_finished():
 	game_finished = true
 	$ui/win_label.show()
 	
 sync func restart_map():
 	get_tree().call_group("enemies", "call_deferred", "queue_free") #I think it is redundant to use call_deferred
 	get_tree().call_group("projectiles", "call_deferred", "queue_free")
-	score = 0;
+	score = 0
 	game_over = false
 	game_finished = false
 	Game.spawn_players_in_level(self);
-	$ui/retry.hide();
-	$ui/win_label.hide();
-	update_score(0);
-	clear_stage();
-	update_lives(START_LIVES);
+	$ui/retry.hide()
+	$ui/win_label.hide()
+	update_score(0)
+	clear_stage()
+	update_lives(START_LIVES)
 
 func _on_spawn_timer_timeout():
 	if !Game.is_network_master_or_sp(self) or game_finished:
@@ -220,6 +224,10 @@ func get_enemies_to_spawn(current_score: int, used_wave_type: int, players_alive
 	var enemies_data: Array = [];
 	enemies_grid.clear_grid(0); #0 being not used
 	var enemies_to_spawn_count: int = get_enemies_to_spawn_count(difficulty, used_wave_type, players_alive_in_game)
+	if boss_was_spawned:
+		enemies_to_spawn_count = enemies_to_spawn_count/4.0
+	
+	enemies_to_spawn_count = clamp(enemies_to_spawn_count, 1, MAX_ENEMIES_TO_SPAWN)
 	for i in range(int(enemies_to_spawn_count)):
 		if (rng.randi_range(0, 100) < 25 or used_wave_type == WAVE_TYPE.SPACESHIPS) and used_wave_type != WAVE_TYPE.ASTEROIDS: # spawn enemies
 			enemies_data.append(generate_enemy_spaceship_spawnargs(difficulty));
@@ -315,11 +323,29 @@ func update_level_speed(new_speed: float):
 	level_speed = new_speed
 	emit_signal("level_speed_changed", Vector2(new_speed, 0.0)) #FIXME: I keep using speed with vectors aaaaaa
 
+func spawn_boss():
+	boss_was_spawned = true
+	var boss_instance: Node2D = boss_scene.instance()
+	boss_instance.rng.set_seed(rng.get_seed())
+	boss_instance.position = Vector2(Game.SCREEN_WIDTH*0.8, Game.SCREEN_HEIGHT/2.0)
+	connect("level_speed_changed", boss_instance, "on_level_speed_changed" )
+	boss_instance.connect("destroyed", self, "_on_boss_killed");
+	boss_instance.set_name(str(enemies_count)); #netcode
+	enemies_count+=1;
+	get_node("Enemies").call_deferred("add_child", boss_instance)
+
+func _on_boss_killed():
+	if Game.is_network_master_or_sp(self):
+		Game.rpc_sp(self, "game_was_finished", []);
+
 sync func update_score(new_score):
 	score = new_score;
 	get_node("ui/score").text = "Score: " + str(score);
 	if score >= SCORE_LIMIT:
-		game_was_finished()
+		#game_was_finished()
+		if !boss_was_spawned:
+			current_wave_type = WAVE_TYPE.ASTEROIDS
+			spawn_boss()
 	if score % POINT_PER_LIFE == 0:
 		update_lives(lives+1)
 		emit_signal("extra_life")

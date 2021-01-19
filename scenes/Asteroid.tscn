@@ -1,18 +1,20 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://sprites/asteroid/asteroid_new1.png" type="Texture" id=1]
 [ext_resource path="res://sprites/asteroid/asteroid_big.png" type="Texture" id=2]
 [ext_resource path="res://scripts/Asteroid.gd" type="Script" id=3]
 [ext_resource path="res://sounds/asteroid_explosion1.ogg" type="AudioStream" id=4]
 [ext_resource path="res://sprites/asteroid/asteroid_small1.png" type="Texture" id=5]
+[ext_resource path="res://Shaders/SpriteColorDeMierda.shader" type="Shader" id=6]
+[ext_resource path="res://anims/npc_hit.tres" type="Animation" id=7]
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = ExtResource( 6 )
+shader_param/new = Color( 1, 1, 1, 1 )
+shader_param/enabled = false
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 2 ) ],
-"loop": true,
-"name": "big",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 1 ) ],
 "loop": true,
 "name": "medium",
@@ -22,33 +24,21 @@ animations = [ {
 "loop": true,
 "name": "small",
 "speed": 5.0
+}, {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "big",
+"speed": 5.0
 } ]
 
 [sub_resource type="CircleShape2D" id=2]
 radius = 6.0
 
-[sub_resource type="Animation" id=3]
-resource_name = "hit"
-length = 0.25
-step = 0.05
-tracks/0/type = "value"
-tracks/0/path = NodePath("sprite:modulate")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 0.05, 0.25 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Color( 0.886275, 0.839216, 0.733333, 1 ), Color( 0.886275, 0.839216, 0.733333, 0.572549 ), Color( 0.886275, 0.839216, 0.733333, 1 ) ]
-}
-
 [sub_resource type="Animation" id=4]
 resource_name = "idle"
 length = 0.5
 tracks/0/type = "value"
-tracks/0/path = NodePath("sprite:modulate")
+tracks/0/path = NodePath("Sprite:modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
@@ -67,21 +57,22 @@ gravity = 0.0
 priority = 1.0
 script = ExtResource( 3 )
 
-[node name="sprite" type="AnimatedSprite" parent="."]
-modulate = Color( 0.886275, 0.839216, 0.733333, 1 )
+[node name="Sprite" type="AnimatedSprite" parent="."]
+material = SubResource( 6 )
 position = Vector2( -0.124268, 0.073822 )
 frames = SubResource( 1 )
 animation = "small"
 playing = true
 
 [node name="hit_zone" type="CollisionShape2D" parent="."]
+visible = false
 shape = SubResource( 2 )
 
 [node name="damage_blink_timer" type="Timer" parent="."]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/hit = SubResource( 3 )
+anims/hit = ExtResource( 7 )
 anims/idle = SubResource( 4 )
 
 [node name="destroyed_sound" type="AudioStreamPlayer" parent="."]

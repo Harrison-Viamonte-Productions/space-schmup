@@ -30,27 +30,38 @@ var spawn_protection_time: float = SPAWN_PROTECTION_DURATION
 var respawn_time: float = 0
 var direction: Vector2 = Vector2.ZERO
 var lives: int = 3 # lives at beggining, used when sv_shared_lives and the game it's mp is false
+var client_color: Color = Color("ffffff")
 
 onready var SpawnProtectionFxTimer: Timer = Timer.new()
 onready var tween: Tween = Tween.new()
 
 func _ready():
 	#Initialize respawn fx timer
-	SpawnProtectionFxTimer.autostart = false;
-	SpawnProtectionFxTimer.one_shot = false;
-	SpawnProtectionFxTimer.connect("timeout", self, "_on_SpawnProtectionFxTimer_timeout");
-	add_child(SpawnProtectionFxTimer);
-	add_child(tween);
+	SpawnProtectionFxTimer.autostart = false
+	SpawnProtectionFxTimer.one_shot = false
+	SpawnProtectionFxTimer.connect("timeout", self, "_on_SpawnProtectionFxTimer_timeout")
+	add_child(SpawnProtectionFxTimer)
+	add_child(tween)
 	
-	add_to_group("network_nodes");
-	add_to_group("players");
+	add_to_group("network_nodes")
+	add_to_group("players")
 	if Game.is_singleplayer_game():
 		$name.hide()
 	else:
 		$name.text = nickname
-	snapshotData.pos = self.global_position;
+	snapshotData.pos = self.global_position
 	
-	enable_spawn_protection();
+	if nickname.nocasecmp_to("stop") == 0: # Gracias gordo
+		client_color = Color("ff2400")
+
+	set_color(client_color)
+	enable_spawn_protection()
+
+func set_color(new_color: Color):
+	$spriteoverlay.modulate = new_color
+	$respawn_timer.modulate = new_color
+	$name.modulate =  new_color
+	$powerup.modulate = new_color
 
 func enable_spawn_protection():
 	spawn_protection_time = SPAWN_PROTECTION_DURATION
@@ -87,13 +98,15 @@ func cs_think(delta):
 	var vel: Vector2 = snapshotData.pos - global_position
 	global_position = global_position.linear_interpolate(snapshotData.pos, delta * CLIENT_FOLLOW_SPEED);
 	$sprite.update_anim(vel)
-	adjust_position_to_bounds();
+	$spriteoverlay.update_anim(vel)
+	adjust_position_to_bounds()
 
 func think(delta):
-	handle_input();
-	move(delta);
+	handle_input()
+	move(delta)
 	$sprite.update_anim(MOVE_SPEED*direction)
-	adjust_position_to_bounds();
+	$spriteoverlay.update_anim(MOVE_SPEED*direction)
+	adjust_position_to_bounds()
 
 func handle_input():
 	direction = Vector2.ZERO;
@@ -129,6 +142,7 @@ sync func shoot_missile(is_double_shoot: bool):
 
 func shoot_one_missile():
 	var shoot_instance: Projectile = shoot_scene.instance();
+	shoot_instance.modulate = client_color
 	shoot_instance.position = position+Vector2(9, 0);
 	shoot_instance.motion = Vector2(500.0, 0.0);
 	shoot_instance.set_fired_by_enemy(false)
@@ -138,6 +152,8 @@ func shoot_one_missile():
 func shoot_two_missiles():
 	var shoot_instanceA: Projectile = shoot_scene.instance();
 	var shoot_instanceB: Projectile = shoot_scene.instance();
+	shoot_instanceA.modulate = client_color
+	shoot_instanceB.modulate = client_color
 	shoot_instanceB.motion = Vector2(500.0, 0.0);
 	shoot_instanceB.mute(); #silly fix to avoid duplicated sound that's annoying
 	shoot_instanceB.position = position+Vector2(9, 5);
@@ -192,6 +208,7 @@ sync func _on_revived():
 	if not is_alive:
 		is_alive = true
 		$sprite.show()
+		$spriteoverlay.show()
 		$hit_zone.set_deferred("disabled", false)
 		$respawn_timer.hide()
 		$name.show()
@@ -212,6 +229,7 @@ sync func _on_destroyed(new_lives: int):
 			$name.hide()
 			emit_signal("out_of_lives", self);
 		$sprite.hide()
+		$spriteoverlay.hide()
 		$hit_zone.set_deferred("disabled", true)
 		emit_signal("destroyed", self, lives);
 
@@ -244,6 +262,8 @@ func enable_shoot():
 func _on_SpawnProtectionFxTimer_timeout():
 	if spawn_protection_time > 0.0:
 		$sprite.modulate.a = 0.5 if $sprite.modulate.a == 1 else 1;
+		$spriteoverlay.modulate.a = 0.5 if $spriteoverlay.modulate.a == 1 else 1;
 	else:
+		$spriteoverlay.modulate.a = 1
 		$sprite.modulate.a = 1
 		SpawnProtectionFxTimer.stop(); #to avoid having the timer working when it's not necessary

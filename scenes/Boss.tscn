@@ -1,0 +1,57 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://anims/npc_hit.tres" type="Animation" id=1]
+[ext_resource path="res://scripts/Boss.gd" type="Script" id=2]
+[ext_resource path="res://sprites/boss/boss02.png" type="Texture" id=3]
+[ext_resource path="res://sprites/boss/boss00.png" type="Texture" id=4]
+[ext_resource path="res://sprites/boss/boss01.png" type="Texture" id=5]
+[ext_resource path="res://sprites/boss/boss03.png" type="Texture" id=6]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 4 ), ExtResource( 5 ) ],
+"loop": true,
+"name": "idle",
+"speed": 10.0
+}, {
+"frames": [ ExtResource( 3 ), ExtResource( 6 ) ],
+"loop": true,
+"name": "accelerate",
+"speed": 10.0
+} ]
+
+[sub_resource type="CapsuleShape2D" id=2]
+radius = 16.305
+height = 0.0
+
+[node name="Boss" type="Area2D"]
+script = ExtResource( 2 )
+
+[node name="Sprite" type="AnimatedSprite" parent="."]
+scale = Vector2( 0.7, 0.7 )
+frames = SubResource( 1 )
+animation = "idle"
+
+[node name="hit_zone" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource( 2 )
+
+[node name="shoot_timer" type="Timer" parent="."]
+wait_time = 2.0
+
+[node name="Paths" type="Node2D" parent="."]
+
+[node name="Path1" type="Node2D" parent="Paths"]
+
+[node name="1" type="Position2D" parent="Paths/Path1"]
+
+[node name="2" type="Position2D" parent="Paths/Path1"]
+position = Vector2( 0, -64 )
+
+[node name="3" type="Position2D" parent="Paths/Path1"]
+position = Vector2( 0, 64 )
+
+[node name="slide_timer" type="Timer" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/hit = ExtResource( 1 )

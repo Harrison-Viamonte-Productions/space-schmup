@@ -1,6 +1,7 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://fonts/PixelOperator8.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://sprites/ui/logo_html5.png" type="Texture" id=2]
 [ext_resource path="res://scripts/Lobby.gd" type="Script" id=3]
 [ext_resource path="res://themes/MenuTheme.tres" type="Theme" id=4]
 [ext_resource path="res://sprites/background.png" type="Texture" id=5]
@@ -335,6 +336,14 @@ texture = ExtResource( 10 )
 expand = true
 stretch_mode = 1
 
+[node name="LogoHTML5" type="TextureRect" parent="LogoBig"]
+visible = false
+margin_right = 288.0
+margin_bottom = 96.0
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 1
+
 [node name="LogoSmall" type="MarginContainer" parent="."]
 visible = false
 anchor_left = 0.5
@@ -352,6 +361,14 @@ __meta__ = {
 margin_right = 192.0
 margin_bottom = 56.0
 texture = ExtResource( 10 )
+expand = true
+stretch_mode = 1
+
+[node name="LogoHTML5" type="TextureRect" parent="LogoSmall"]
+visible = false
+margin_right = 192.0
+margin_bottom = 56.0
+texture = ExtResource( 2 )
 expand = true
 stretch_mode = 1
 

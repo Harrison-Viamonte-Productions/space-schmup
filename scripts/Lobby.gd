@@ -15,6 +15,10 @@ onready var DifficultyOptionSP: OptionButton = $SPGame/VBoxContainer/HBoxContain
 onready var StartGameSPBtn = $SPGame/VBoxContainer/StartSP
 onready var SharedLivesCheckBox: CheckBox = $Lobby/panel/MarginContainer/vbox/HBoxContainer/SharedLives
 onready var CreditsBtn: TextureButton = $CenterContainer/AboutUs
+onready var LogoBigDesktop = $LogoBig/Logo
+onready var LogoSmallDesktop = $LogoSmall/Logo
+onready var LogoBigHTML = $LogoBig/LogoHTML5
+onready var LogoSmallHTML = $LogoSmall/LogoHTML5
 
 func _ready():
 	
@@ -45,6 +49,15 @@ func _ready():
 	if OS.has_feature("HTML5"): # No coop for html5 by now
 		MultiplayerBtn.hide()
 		ExitGameBtn.hide()
+		LogoBigDesktop.hide()
+		LogoSmallDesktop.hide()
+		LogoBigHTML.show()
+		LogoSmallHTML.show()
+	else:
+		LogoBigDesktop.show()
+		LogoSmallDesktop.show()
+		LogoBigHTML.hide()
+		LogoSmallHTML.hide()
 		
 	init_main_menu()
 

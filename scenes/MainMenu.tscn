@@ -22,7 +22,7 @@ border_color = Color( 0.956863, 0.2, 0.2, 0.282353 )
 size = 11
 font_data = ExtResource( 6 )
 
-[sub_resource type="DynamicFont" id=4]
+[sub_resource type="DynamicFont" id=3]
 size = 8
 font_data = ExtResource( 1 )
 
@@ -366,7 +366,7 @@ margin_top = -20.0
 margin_right = -6.0
 margin_bottom = -6.0
 theme = ExtResource( 9 )
-custom_fonts/font = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
 text = "Back"
 __meta__ = {
 "_edit_use_anchors_": false

@@ -7,8 +7,28 @@ func _ready():
 	ignore_base_velocity = true
 	current_path_to_follow = 0
 	$Sprite.modulate = Color("#ffffff")
-	health = 300
+	health = 200
 
+func destroy():
+	if is_destroyed:
+		return;
+	Game.rpc_sp(self, "death_sync", [])
+	is_destroyed = true;
+
+sync func death_sync():
+	emit_signal("destroyed"); # Call it here and not in exit_tree...
+	call_deferred("queue_free");
+	var stage_node = get_parent();
+	if !is_instance_valid(stage_node):
+		print("[WARNING] invalid instance at enemy::destroy")
+		return
+	var explosion_instance = explosion_scene.instance();
+	explosion_instance.position = position;
+	#stage_node.add_child(explosion_instance);
+	stage_node.call_deferred("add_child", explosion_instance)
+
+func _on_enemy_body_entered(body):
+	body.hit()
 
 func _on_shoot_timer_timeout():
 	if position.x > Game.SCREEN_WIDTH:

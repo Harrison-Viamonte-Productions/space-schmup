@@ -153,7 +153,7 @@ sync func restart_map():
 	score = 0;
 	game_over = false
 	game_finished = false
-	Game.spawn_players(self);
+	Game.spawn_players_in_level(self);
 	$ui/retry.hide();
 	$ui/win_label.hide();
 	update_score(0);

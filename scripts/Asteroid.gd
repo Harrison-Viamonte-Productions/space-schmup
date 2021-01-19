@@ -2,19 +2,19 @@ extends Area2D
 
 const SHOOT_PUSH_FACTOR: float = 0.3
 
-var explosion_scene = preload("res://scenes/explosion.tscn");
-export var move_speed: Vector2 = Vector2(100.0, 0.0);
-export var health: int = 1;
+var explosion_scene = preload("res://scenes/explosion.tscn")
+export var move_speed: Vector2 = Vector2(100.0, 0.0)
+export var health: int = 1
 var base_speed: Vector2 = Vector2.ZERO
-var is_destroyed = false;
-signal destroyed;
-var spawn_rotation: float = 0;
-var move_mod: float = 1;
+var is_destroyed = false
+signal destroyed
+var spawn_rotation: float = 0
+var move_mod: float = 1
 
 func _ready():
 	add_to_group("enemies");
-	$destroyed_sound.connect("finished", self, "_on_destroyedsnd_finished");
-	$sprite.rotation_degrees = spawn_rotation;
+	$destroyed_sound.connect("finished", self, "_on_destroyedsnd_finished")
+	$sprite.rotation_degrees = spawn_rotation
 	if self.scale.x <= 1.10:
 		$sprite.play("small")
 		$sprite.scale = Vector2(1.0, 1.0)
@@ -26,31 +26,30 @@ func _ready():
 		$sprite.scale = Vector2(0.25, 0.25)
 
 func _on_destroyedsnd_finished():
-	call_deferred("queue_free");
+	call_deferred("queue_free")
 
 func _physics_process(delta):
 	if !is_destroyed:
-		position-=delta*(move_speed*move_mod+base_speed);
+		position-=delta*(move_speed*move_mod+base_speed)
 		if position.x <= -100:
-			call_deferred("queue_free");
+			call_deferred("queue_free")
 
 func destroy():
 	if is_destroyed:
 		return;
-	is_destroyed = true;
+	is_destroyed = true
 
 	$destroyed_sound.play();
-	$hit_zone.set_deferred("disabled", true);
-	$sprite.hide();
-	emit_signal("destroyed"); # Call it here and not in exit_tree...
-	#call_deferred("queue_free");
-	var stage_node = get_parent();
+	$hit_zone.set_deferred("disabled", true)
+	$sprite.hide()
+	emit_signal("destroyed") # Call it here and not in exit_tree...
+	#call_deferred("queue_free")
+	var stage_node = get_parent()
 	if !is_instance_valid(stage_node):
 		print("[WARNING] Invalid instance at Asteroid::destroy")
 		return
-	var explosion_instance = explosion_scene.instance();
-	explosion_instance.position = position;
-	#stage_node.add_child(explosion_instance);
+	var explosion_instance = explosion_scene.instance()
+	explosion_instance.position = position
 	stage_node.call_deferred("add_child", explosion_instance)
 
 func hit():

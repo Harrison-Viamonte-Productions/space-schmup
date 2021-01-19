@@ -130,11 +130,11 @@ func start_offline_game():
 	Game.start_game(game_difficulty)
 
 func host_server():
-	Game.host_game(PlayerNameTextEdit.text);
-	HostServerBtn.disabled = true;
-	var max_players: int = int(MaxClientTextEdit.text);
+	Game.host_game(PlayerNameTextEdit.text)
+	HostServerBtn.disabled = true
+	var max_players: int = int(MaxClientTextEdit.text)
 	if max_players == 1:
-		Game.rpc("start_game");
+		Game.rpc("start_game")
 
 func _update_player_list(players):
 	var PlayersStr: String = ""
@@ -143,13 +143,13 @@ func _update_player_list(players):
 	$Lobby/panel/MarginContainer/vbox/Players.text = PlayersStr
 
 func join_server():
-	var IPAddress: String = IPTextEdit.text;
-	IPAddress = IPAddress.replace(" ", "");
-	Game.join_game(IPAddress, PlayerNameTextEdit.text);
-	ConnectServerBtn.disabled = true;
+	var IPAddress: String = IPTextEdit.text
+	IPAddress = IPAddress.replace(" ", "")
+	Game.join_game(IPAddress, PlayerNameTextEdit.text)
+	ConnectServerBtn.disabled = true
 
 func _hide_menu():
-	hide();
+	hide()
 
 func _reset_menu():
 	$Multiplayer.hide()
@@ -157,6 +157,6 @@ func _reset_menu():
 	$Lobby.hide()
 	$SPGame.hide()
 	BackToMenuBtn.hide()
-	HostServerBtn.disabled = false;
-	ConnectServerBtn.disabled = false;
-	show();
+	HostServerBtn.disabled = false
+	ConnectServerBtn.disabled = false
+	show()

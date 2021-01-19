@@ -52,9 +52,9 @@ func generate_stars_in_tiles(index: int, offset: Vector2 = Vector2.ZERO):
 	stars_tiles[index].map.update_bitmask_region();
 
 func _process(delta):
-	back_layer1.position += Vector2(-scroll_speed*delta, 0.0);
+	back_layer1.position += Vector2(-scroll_speed*delta, 0.0)
 	if (back_layer1.position.x <= -Game.SCREEN_WIDTH):
-		back_layer1.position.x += Game.SCREEN_WIDTH;
+		back_layer1.position.x += Game.SCREEN_WIDTH
 	move_all_stars(delta)
 
 func move_all_stars(delta):

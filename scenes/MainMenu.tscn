@@ -1,13 +1,14 @@
 [gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://fonts/PixelOperator8.ttf" type="DynamicFontData" id=1]
-[ext_resource path="res://fonts/hour5.ttf" type="DynamicFontData" id=2]
 [ext_resource path="res://scripts/Lobby.gd" type="Script" id=3]
 [ext_resource path="res://themes/MenuTheme.tres" type="Theme" id=4]
 [ext_resource path="res://sprites/background.png" type="Texture" id=5]
 [ext_resource path="res://fonts/PixelOperator8-Bold.ttf" type="DynamicFontData" id=6]
 [ext_resource path="res://sprites/ui/about_us_hover.png" type="Texture" id=7]
 [ext_resource path="res://sprites/ui/about_us_normal.png" type="Texture" id=8]
+[ext_resource path="res://themes/ButtonsTheme.tres" type="Theme" id=9]
+[ext_resource path="res://sprites/ui/logo.png" type="Texture" id=10]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.737255, 0.392157, 0.878431, 0.196078 )
@@ -20,10 +21,6 @@ border_color = Color( 0.956863, 0.2, 0.2, 0.282353 )
 [sub_resource type="DynamicFont" id=2]
 size = 11
 font_data = ExtResource( 6 )
-
-[sub_resource type="DynamicFont" id=3]
-size = 48
-font_data = ExtResource( 2 )
 
 [sub_resource type="DynamicFont" id=4]
 size = 8
@@ -41,6 +38,7 @@ __meta__ = {
 modulate = Color( 0.247059, 0.458824, 0.572549, 1 )
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_right = 320.0
 texture = ExtResource( 5 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -55,7 +53,7 @@ margin_left = -92.5
 margin_top = -22.0
 margin_right = 92.5
 grow_vertical = 0
-theme = ExtResource( 4 )
+theme = ExtResource( 9 )
 custom_constants/margin_bottom = 10
 __meta__ = {
 "_edit_use_anchors_": false
@@ -63,24 +61,25 @@ __meta__ = {
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MenuButtons"]
 margin_right = 185.0
-margin_bottom = 86.0
+margin_bottom = 68.0
 custom_constants/separation = 10
 
 [node name="PlayOffline" type="Button" parent="MenuButtons/VBoxContainer"]
 margin_right = 185.0
-margin_bottom = 22.0
+margin_bottom = 16.0
+theme = ExtResource( 9 )
 text = "PLAY OFFLINE"
 
 [node name="Multiplayer" type="Button" parent="MenuButtons/VBoxContainer"]
-margin_top = 32.0
+margin_top = 26.0
 margin_right = 185.0
-margin_bottom = 54.0
+margin_bottom = 42.0
 text = "MULTIPLAYER"
 
 [node name="Exit" type="Button" parent="MenuButtons/VBoxContainer"]
-margin_top = 64.0
+margin_top = 52.0
 margin_right = 185.0
-margin_bottom = 86.0
+margin_bottom = 68.0
 text = "QUIT GAME"
 
 [node name="SPGame" type="MarginContainer" parent="."]
@@ -93,7 +92,7 @@ margin_left = -92.5
 margin_top = -22.0
 margin_right = 92.5
 grow_vertical = 0
-theme = ExtResource( 4 )
+theme = ExtResource( 9 )
 custom_constants/margin_bottom = 10
 __meta__ = {
 "_edit_use_anchors_": false
@@ -101,29 +100,28 @@ __meta__ = {
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SPGame"]
 margin_right = 185.0
-margin_bottom = 54.0
+margin_bottom = 42.0
 custom_constants/separation = 10
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SPGame/VBoxContainer"]
 margin_right = 185.0
-margin_bottom = 22.0
+margin_bottom = 16.0
 
 [node name="Label" type="Label" parent="SPGame/VBoxContainer/HBoxContainer"]
-margin_top = 7.0
 margin_right = 44.0
-margin_bottom = 15.0
+margin_bottom = 16.0
 text = "SKILL:"
 
 [node name="DifficultySP" type="OptionButton" parent="SPGame/VBoxContainer/HBoxContainer"]
 margin_left = 48.0
-margin_right = 115.0
-margin_bottom = 22.0
+margin_right = 105.0
+margin_bottom = 16.0
 text = "SKILL"
 
 [node name="StartSP" type="Button" parent="SPGame/VBoxContainer"]
-margin_top = 32.0
+margin_top = 26.0
 margin_right = 185.0
-margin_bottom = 54.0
+margin_bottom = 42.0
 text = "START GAME"
 
 [node name="Lobby" type="MarginContainer" parent="."]
@@ -133,11 +131,11 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 margin_left = -92.0
-margin_top = -134.0
+margin_top = -129.0
 margin_right = 97.0
 grow_vertical = 0
 theme = ExtResource( 4 )
-custom_constants/margin_bottom = 10
+custom_constants/margin_bottom = 5
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -190,13 +188,14 @@ margin_right = 175.0
 margin_bottom = 87.0
 
 [node name="Difficulty" type="OptionButton" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
-margin_right = 61.0
+margin_right = 50.0
 margin_bottom = 24.0
+theme = ExtResource( 9 )
 text = "Easy"
 
 [node name="SharedLives" type="CheckBox" parent="Lobby/panel/MarginContainer/vbox/HBoxContainer"]
-margin_left = 65.0
-margin_right = 175.0
+margin_left = 54.0
+margin_right = 164.0
 margin_bottom = 24.0
 text = "Share Lives"
 
@@ -205,6 +204,7 @@ margin_top = 92.0
 margin_right = 175.0
 margin_bottom = 110.0
 rect_min_size = Vector2( 0, 18 )
+theme = ExtResource( 9 )
 custom_fonts/font = SubResource( 2 )
 text = "START"
 
@@ -218,7 +218,7 @@ margin_top = -126.0
 margin_right = -60.0
 margin_bottom = -10.0
 grow_vertical = 0
-theme = ExtResource( 4 )
+theme = ExtResource( 9 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -228,9 +228,9 @@ margin_right = 200.0
 margin_bottom = 20.0
 
 [node name="NickLabel" type="Label" parent="Multiplayer/PlayerContainer"]
-margin_top = 6.0
+margin_top = 2.0
 margin_right = 69.0
-margin_bottom = 14.0
+margin_bottom = 18.0
 text = "NICKNAME:"
 uppercase = true
 __meta__ = {
@@ -251,7 +251,7 @@ __meta__ = {
 [node name="HostServer" type="Button" parent="Multiplayer"]
 margin_top = 24.0
 margin_right = 200.0
-margin_bottom = 46.0
+margin_bottom = 44.0
 rect_min_size = Vector2( 0, 20 )
 text = "Host a Server"
 __meta__ = {
@@ -259,14 +259,14 @@ __meta__ = {
 }
 
 [node name="MaxClientsContainer" type="HBoxContainer" parent="Multiplayer"]
-margin_top = 50.0
+margin_top = 48.0
 margin_right = 200.0
-margin_bottom = 70.0
+margin_bottom = 68.0
 
 [node name="MaxLabel" type="Label" parent="Multiplayer/MaxClientsContainer"]
-margin_top = 6.0
+margin_top = 2.0
 margin_right = 89.0
-margin_bottom = 14.0
+margin_bottom = 18.0
 text = "Max Players:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -284,21 +284,21 @@ __meta__ = {
 }
 
 [node name="Connect" type="Button" parent="Multiplayer"]
-margin_top = 74.0
+margin_top = 72.0
 margin_right = 200.0
-margin_bottom = 96.0
+margin_bottom = 92.0
 rect_min_size = Vector2( 0, 20 )
 text = "Join Game"
 
 [node name="IPContainer" type="HBoxContainer" parent="Multiplayer"]
-margin_top = 100.0
+margin_top = 96.0
 margin_right = 200.0
-margin_bottom = 120.0
+margin_bottom = 116.0
 
 [node name="IPLabel" type="Label" parent="Multiplayer/IPContainer"]
-margin_top = 6.0
+margin_top = 2.0
 margin_right = 72.0
-margin_bottom = 14.0
+margin_bottom = 18.0
 text = "Server IP:"
 uppercase = true
 __meta__ = {
@@ -319,24 +319,21 @@ __meta__ = {
 [node name="LogoContainer" type="MarginContainer" parent="."]
 anchor_left = 0.5
 anchor_right = 0.5
-margin_left = -89.0
-margin_right = 94.0
-margin_bottom = 37.0
+margin_left = -96.0
+margin_right = 96.0
+margin_bottom = 56.0
 grow_horizontal = 2
-custom_constants/margin_top = 5
+custom_constants/margin_top = 0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Logo" type="Label" parent="LogoContainer"]
-margin_top = 5.0
-margin_right = 183.0
-margin_bottom = 37.0
-theme = ExtResource( 4 )
-custom_fonts/font = SubResource( 3 )
-text = "Space Schmup"
-align = 1
-uppercase = true
+[node name="TextureRect" type="TextureRect" parent="LogoContainer"]
+margin_right = 192.0
+margin_bottom = 56.0
+texture = ExtResource( 10 )
+expand = true
+stretch_mode = 1
 
 [node name="Back" type="Button" parent="."]
 visible = false
@@ -348,6 +345,7 @@ margin_left = -46.0
 margin_top = -20.0
 margin_right = -6.0
 margin_bottom = -6.0
+theme = ExtResource( 9 )
 custom_fonts/font = SubResource( 4 )
 text = "Back"
 __meta__ = {
@@ -380,7 +378,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 56.0
-margin_top = -132.0
+margin_top = -140.0
 margin_right = -48.0
 margin_bottom = -4.0
 theme = ExtResource( 4 )
@@ -390,15 +388,16 @@ __meta__ = {
 
 [node name="Label" type="Label" parent="Credits"]
 margin_left = 47.0
-margin_top = 16.0
+margin_top = 14.0
 margin_right = 169.0
-margin_bottom = 112.0
+margin_bottom = 121.0
 text = "Programming:
 Matthew Harrison
 Stradex
 
 Art:
 Matthew Harrison
+Stopsignal
 
 Special Thanks:
 Nick MacKenzie"
